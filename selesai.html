@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Selesai - Hasil Akhir</title>
+    <style>
+        :root {
+            --bg: #ffffff;
+            --text: #000000;
+            --primary: #ffee00;
+            --secondary: #00f2ff;
+            --accent: #ff0055;
+            --border: 6px solid #000000;
+            --shadow: 8px 8px 0px #000000;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--primary);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            overflow: hidden;
+        }
+
+        .result-card {
+            background: #fff;
+            border: var(--border);
+            box-shadow: 15px 15px 0px var(--text);
+            width: 100%;
+            max-width: 600px;
+            padding: 50px;
+            text-align: center;
+            position: relative;
+            z-index: 10;
+            animation: cardPopup 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        @keyframes cardPopup {
+            0% { transform: scale(0.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 3rem;
+            text-transform: uppercase;
+            letter-spacing: -2px;
+            margin-bottom: 10px;
+            background: var(--secondary);
+            padding: 5px 15px;
+            border: 4px solid #000;
+            display: inline-block;
+            box-shadow: 6px 6px 0px #000;
+        }
+
+        .score-box {
+            background: #000;
+            color: #fff;
+            padding: 30px;
+            margin: 30px auto;
+            border: 4px solid #000;
+            box-shadow: 10px 10px 0px var(--accent);
+            display: inline-block;
+            min-width: 200px;
+        }
+
+        .score-label {
+            display: block;
+            font-weight: 900;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            letter-spacing: 2px;
+            margin-bottom: 5px;
+        }
+
+        .score-display {
+            font-size: 6rem;
+            font-family: 'Outfit', sans-serif;
+            line-height: 1;
+            font-weight: 900;
+        }
+
+        .user-details {
+            text-align: left;
+            margin: 30px 0;
+            background: #f8f8f8;
+            border: 4px solid #000;
+            padding: 20px;
+            box-shadow: 6px 6px 0px #000;
+        }
+
+        .user-details div {
+            margin-bottom: 10px;
+            font-weight: 800;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+        }
+
+        .user-details span {
+            color: var(--accent);
+            font-weight: 900;
+            margin-left: 10px;
+        }
+
+        #eval-msg {
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: 40px;
+            line-height: 1.5;
+            background: #f0f0f0;
+            padding: 15px;
+            border-left: 8px solid var(--secondary);
+        }
+
+        .btn-restart {
+            width: 100%;
+            padding: 20px;
+            background: #000;
+            color: #fff;
+            border: none;
+            font-size: 1.3rem;
+            font-weight: 900;
+            cursor: pointer;
+            box-shadow: 8px 8px 0px var(--accent);
+            transition: 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-restart:hover {
+            transform: translate(-4px, -4px);
+            box-shadow: 12px 12px 0px var(--accent);
+        }
+
+        .confetti-canvas {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 5;
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="bg-effects" class="confetti-canvas"></canvas>
+
+    <div class="result-card">
+        <h1>Quiz Selesai!</h1>
+        
+        <div class="score-box">
+            <span class="score-label">Skor Akhir</span>
+            <div class="score-display" id="final-total">0</div>
+        </div>
+
+        <div class="user-details">
+            <div>Nama: <span id="res-name">-</span></div>
+            <div>Absen: <span id="res-absen">-</span></div>
+            <div>Kelas: <span id="res-kelas">-</span></div>
+        </div>
+
+        <p id="eval-msg">Mengevaluasi hasil...</p>
+
+        <button class="btn-restart" onclick="window.location.href='index.html'">Kembali ke Awal</button>
+    </div>
+
+    <script src="quiz-core.js"></script>
+    <script>
+        const user = QuizCore.getUser();
+        const total = parseInt(localStorage.getItem('totalScore')) || 0;
+        
+        document.getElementById('res-name').innerText = user.name;
+        document.getElementById('res-absen').innerText = user.absen;
+        document.getElementById('res-kelas').innerText = user.kelas;
+
+        const display = document.getElementById('final-total');
+        const evalMsg = document.getElementById('eval-msg');
+
+        // Score animation
+        let current = 0;
+        const interval = setInterval(() => {
+            if(current >= total) {
+                display.innerText = total;
+                clearInterval(interval);
+                showFinalMessage();
+            } else {
+                current += 1;
+                display.innerText = current;
+            }
+        }, 20);
+
+        function showFinalMessage() {
+            if(total >= 80) {
+                evalMsg.innerText = "SANGAT BAGUS! Kamu benar-benar memahami budaya Nusantara. Pertahankan semangatmu!";
+            } else if(total >= 50) {
+                evalMsg.innerText = "KERJA BAGUS! Kamu sudah cukup mengenal budaya kita. Tingkatkan lagi ya!";
+            } else {
+                evalMsg.innerText = "SEMANGAT! Ayo belajar lagi lebih giat agar makin cinta budaya Indonesia!";
+            }
+        }
+
+        // Neo-Brutalist Confetti (Pixels)
+        const canvas = document.getElementById('bg-effects');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        let particles = [];
+        const colors = ['#00f2ff', '#ffee00', '#ff0055', '#000000'];
+
+        for(let i=0; i<80; i++) {
+            particles.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                size: Math.random() * 8 + 4,
+                color: colors[Math.floor(Math.random() * colors.length)],
+                speed: Math.random() * 3 + 2,
+                vx: Math.random() * 2 - 1
+            });
+        }
+
+        function animate() {
+            ctx.clearRect(0,0,canvas.width,canvas.height);
+            particles.forEach(p => {
+                ctx.fillStyle = p.color;
+                ctx.fillRect(p.x, p.y, p.size, p.size); // Square confetti
+                ctx.strokeStyle = '#000';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(p.x, p.y, p.size, p.size);
+                
+                p.y += p.speed;
+                p.x += p.vx;
+                if(p.y > canvas.height) p.y = -20;
+            });
+            requestAnimationFrame(animate);
+        }
+        animate();
+    </script>
+</body>
+</html>

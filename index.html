@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Budaya Nusantara - Masuk</title>
+    <style>
+        :root {
+            --bg: #ffffff;
+            --text: #000000;
+            --primary: #ffee00;
+            --secondary: #00f2ff;
+            --accent: #ff0055;
+            --border: 6px solid #000000;
+            --shadow: 8px 8px 0px #000000;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            overflow: hidden;
+        }
+
+        .login-card {
+            background: #fff;
+            border: var(--border);
+            box-shadow: 15px 15px 0px var(--text);
+            padding: 50px;
+            width: 100%;
+            max-width: 500px;
+            position: relative;
+            animation: cardEntrance 0.8s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+        }
+
+        @keyframes cardEntrance {
+            0% { transform: translateY(100px); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+
+        h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 3.5rem;
+            line-height: 0.9;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: -2px;
+            background: var(--primary);
+            display: inline-block;
+            padding: 10px;
+            border: 4px solid #000;
+            box-shadow: 6px 6px 0px #000;
+        }
+
+        p {
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: 35px;
+            line-height: 1.4;
+            background: #fff;
+            padding: 5px;
+            display: inline-block;
+            border: 2px solid #000;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            font-weight: 900;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+            margin-left: 2px;
+        }
+
+        input {
+            width: 100%;
+            padding: 18px;
+            border: 4px solid #000;
+            font-size: 1.1rem;
+            font-weight: 700;
+            outline: none;
+            transition: 0.2s;
+            box-shadow: 4px 4px 0px #000;
+        }
+
+        input:focus {
+            transform: translate(-2px, -2px);
+            box-shadow: 8px 8px 0px var(--secondary);
+            background-color: #f8fbff;
+        }
+
+        .btn-start {
+            width: 100%;
+            padding: 22px;
+            background: var(--accent);
+            color: #fff;
+            border: 4px solid #000;
+            font-size: 1.4rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            cursor: pointer;
+            box-shadow: 8px 8px 0px #000;
+            transition: 0.2s;
+            margin-top: 15px;
+            letter-spacing: 1px;
+        }
+
+        .btn-start:hover {
+            transform: translate(-4px, -4px);
+            box-shadow: 12px 12px 0px #000;
+            background: #ff2b70;
+        }
+
+        .btn-start:active {
+            transform: translate(0, 0);
+            box-shadow: 4px 4px 0px #000;
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            h1 { font-size: 2.5rem; }
+            .login-card { padding: 30px; }
+        }
+
+        .creators-box {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            z-index: 100;
+            background: #fff;
+            border: 3px solid #000;
+            padding: 10px;
+            box-shadow: 5px 5px 0px #000;
+            font-family: 'Inter', sans-serif;
+            font-size: 10px;
+            line-height: 1.4;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-card">
+        <h1>QUIZ PKN</h1>
+        <br>
+        <p>IDENTITAS PESERTA QUIZ PKN</p>
+        
+        <form id="login-form">
+            <div class="form-group">
+                <label>Nama Lengkap</label>
+                <input type="text" id="name" placeholder="Siapa nama Anda?" required>
+            </div>
+            <div class="form-group">
+                <label>Nomor Absen</label>
+                <input type="number" id="absen" placeholder="Contoh: 07" required>
+            </div>
+            <div class="form-group">
+                <label>Kelas</label>
+                <input type="text" id="kelas" placeholder="Contoh: XII RPL 1" required>
+            </div>
+            <button type="submit" class="btn-start">MULAI KERJAKAN</button>
+        </form>
+    </div>
+
+    <div class="creators-box">
+        1. Arya Bilal Azzuri / 08 / XII RPL 3<br>
+        2. Fiha Aridhoi / 18 / XII RPL 3<br>
+        3. Muhammad Ayman Hammami / 26 / XII RPL 3
+    </div>
+
+    <script src="quiz-core.js"></script>
+    <script>
+        document.getElementById('login-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const name = document.getElementById('name').value;
+            const absen = document.getElementById('absen').value;
+            const kelas = document.getElementById('kelas').value;
+            
+            QuizCore.saveUser(name, absen, kelas);
+            
+            // Exit animation
+            document.querySelector('.login-card').style.transition = '0.6s cubic-bezier(0.7, 0, 0.3, 1)';
+            document.querySelector('.login-card').style.transform = 'translateY(-100vh) rotate(-20deg)';
+            document.querySelector('.login-card').style.opacity = '0';
+            
+            setTimeout(() => {
+                window.location.href = 'soal1.html';
+            }, 600);
+        });
+    </script>
+</body>
+</html>

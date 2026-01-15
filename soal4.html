@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Soal 4 - Budaya Wayang</title>
+    <style>
+        :root {
+            --bg: #000000;
+            --card: #ffffff;
+            --accent: #ffee00;
+            --correct: #00ff88;
+            --wrong: #ff0055;
+            --border: 5px solid #000000;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Arial Black', sans-serif; }
+
+        body {
+            background-color: var(--bg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        .quiz-container {
+            background: var(--card);
+            border: var(--border);
+            box-shadow: 15px 15px 0px var(--accent);
+            width: 95vw;
+            max-width: 850px;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .header-ui {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .badge {
+            border: 3px solid #000;
+            padding: 5px 15px;
+            background: #fff;
+            font-size: 0.9rem;
+        }
+
+        .question-text {
+            background: #000;
+            color: #fff;
+            padding: 15px;
+            font-size: 1rem;
+            line-height: 1.4;
+        }
+
+        /* Arena Utama */
+        .game-arena {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 25px;
+            align-items: center;
+        }
+
+        /* Objek yang Diseret */
+        .source-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .draggable-image {
+            width: 200px;
+            cursor: grab;
+            border: var(--border);
+            background: #fff;
+            transition: transform 0.2s;
+        }
+
+        .draggable-image:active { cursor: grabbing; transform: scale(0.95); }
+
+        /* Area Pilihan */
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+
+        .drop-target {
+            border: 3px solid #000;
+            padding: 15px;
+            background: #f0f0f0;
+            font-size: 0.85rem;
+            min-height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            transition: 0.3s;
+        }
+
+        .drop-target.hover {
+            background: var(--accent);
+            transform: scale(1.02);
+            border-style: dashed;
+        }
+
+        /* Feedback States */
+        .is-correct { background: var(--correct) !important; font-weight: bold; }
+        .is-wrong { background: var(--wrong) !important; color: #fff; }
+
+        .creators-box {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            z-index: 100;
+            background: #fff;
+            border: 3px solid #000;
+            padding: 10px;
+            box-shadow: 5px 5px 0px #000;
+            font-family: 'Arial Black', sans-serif;
+            font-size: 10px;
+            line-height: 1.4;
+            text-transform: uppercase;
+        }
+    </style>
+    <script src="quiz-core.js"></script>
+</head>
+<body>
+
+    <div class="quiz-container">
+        <div class="header-ui">
+            <div class="badge">SKOR: <span id="score">0</span></div>
+            <div class="badge" id="timer">02:00</div>
+        </div>
+
+        <div class="question-text">
+            Perhatikan gambar hasil budaya berikut. Seret jawaban yang paling tepat untuk menunjukkan peran positif budaya tersebut dalam kehidupan masyarakat.
+        </div>
+
+        <div class="game-arena">
+            <div class="source-area">
+                <img src="images/wayang.jpg" 
+                     alt="Wayang Kulit" 
+                     class="draggable-image" 
+                     id="wayang-img" 
+                     draggable="true">
+                <small>SERET GAMBAR INI</small>
+            </div>
+
+            <div class="options-grid" id="options-grid">
+                </div>
+        </div>
+
+    </div>
+
+    <div class="creators-box">
+        1. Arya Bilal Azzuri / 08 / XII RPL 3<br>
+        2. Fiha Aridhoi / 18 / XII RPL 3<br>
+        3. Muhammad Ayman Hammami / 26 / XII RPL 3
+    </div>
+
+    <script>
+        let totalScore = (parseInt(localStorage.getItem('totalScore')) || 0);
+        document.getElementById('score').innerText = totalScore;
+
+        const quizData = {
+            correct: "Media penyampaian nilai moral, pesan kehidupan, dan pendidikan karakter yang diwariskan secara turun-temurun.",
+            options: [
+                "Media penyampaian nilai moral, pesan kehidupan, dan pendidikan karakter yang diwariskan secara turun-temurun.",
+                "Sekadar hiburan modern tanpa nilai budaya bagi masyarakat.",
+                "Alat musik tradisional untuk permainan bersama anak-anak.",
+                "Karya seni pahat berbahan kayu untuk hiasan dinding saja."
+            ]
+        };
+
+        const grid = document.getElementById('options-grid');
+        let isDone = false;
+
+        // Render Opsi secara acak
+        [...quizData.options].sort(() => Math.random() - 0.5).forEach(text => {
+            const div = document.createElement('div');
+            div.className = 'drop-target';
+            div.innerText = text;
+            div.dataset.value = text;
+
+            // Event Drag and Drop
+            div.ondragover = (e) => {
+                e.preventDefault();
+                if(!isDone) div.classList.add('hover');
+            };
+
+            div.ondragleave = () => div.classList.remove('hover');
+
+            div.ondrop = (e) => {
+                e.preventDefault();
+                if(isDone) return;
+                handleAnswer(div);
+            };
+
+            grid.appendChild(div);
+        });
+
+        // Logika Seret Gambar
+        const wayangImg = document.getElementById('wayang-img');
+        wayangImg.ondragstart = (e) => {
+            if(isDone) e.preventDefault();
+            e.dataTransfer.setData('text', 'wayang');
+        };
+
+        function handleAnswer(target) {
+            isDone = true;
+            const userChoice = target.dataset.value;
+            const allTargets = document.querySelectorAll('.drop-target');
+
+            if(userChoice === quizData.correct) {
+                target.classList.add('is-correct');
+                target.innerText = "BENAR! " + target.innerText;
+                QuizCore.updateScore(10);
+                totalScore = (parseInt(localStorage.getItem('totalScore')) || 0);
+                document.getElementById('score').innerText = totalScore;
+                document.body.style.backgroundColor = "var(--correct)";
+                setTimeout(() => window.location.href = 'soal5.html', 1500);
+            } else {
+                target.classList.add('is-wrong');
+                document.body.style.backgroundColor = "var(--wrong)";
+                // Tunjukkan jawaban yang benar
+                allTargets.forEach(t => {
+                    if(t.dataset.value === quizData.correct) t.classList.add('is-correct');
+                });
+                setTimeout(() => window.location.href = 'soal5.html', 2000);
+            }
+        }
+
+    </script>
+</body>
+</html>

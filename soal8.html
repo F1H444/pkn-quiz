@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Soal - Tari Kecak</title>
+    <style>
+        :root {
+            --bg: #000000;
+            --card: #ffffff;
+            --accent: #ffee00;
+            --correct: #00ff88;
+            --wrong: #ff0055;
+            --border: 5px solid #000000;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Arial Black', sans-serif; }
+
+        body {
+            background-color: var(--bg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .quiz-container {
+            background: var(--card);
+            border: var(--border);
+            box-shadow: 15px 15px 0px var(--accent);
+            width: 95vw;
+            max-width: 850px;
+            padding: 30px;
+        }
+
+        .header-ui {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .badge {
+            border: 3px solid #000;
+            padding: 5px 15px;
+            background: #fff;
+        }
+
+        .question-text {
+            background: #000;
+            color: #fff;
+            padding: 15px;
+            text-align: center;
+            font-size: 1rem;
+            margin-bottom: 25px;
+        }
+
+        .main-arena {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 30px;
+            align-items: center;
+        }
+
+        /* Objek Drag */
+        .source-side {
+            text-align: center;
+            border-right: 3px solid #eee;
+            padding-right: 20px;
+        }
+
+        .kecak-image {
+            width: 100%;
+            border: var(--border);
+            cursor: grab;
+            transition: transform 0.2s;
+            background: #fff;
+            box-shadow: 8px 8px 0px #000;
+        }
+
+        .kecak-image:active { cursor: grabbing; transform: scale(0.98); }
+
+        /* Target Drop */
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .drop-target {
+            border: 3px solid #000;
+            padding: 15px;
+            background: #fff;
+            font-size: 1.1rem;
+            text-align: center;
+            transition: 0.3s;
+            position: relative;
+        }
+
+        .drop-target.hover {
+            background: var(--accent);
+            transform: scale(1.03);
+            border-style: dashed;
+        }
+
+        .is-correct { background: var(--correct) !important; color: #000; }
+        .is-wrong { background: var(--wrong) !important; color: #fff; }
+
+        small { display: block; margin-top: 15px; font-size: 0.7rem; color: #555; }
+
+        .creators-box {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            z-index: 100;
+            background: #fff;
+            border: 3px solid #000;
+            padding: 10px;
+            box-shadow: 5px 5px 0px #000;
+            font-family: 'Arial Black', sans-serif;
+            font-size: 10px;
+            line-height: 1.4;
+            text-transform: uppercase;
+        }
+    </style>
+    <script src="quiz-core.js"></script>
+</head>
+<body>
+
+    <div class="quiz-container">
+        <div class="header-ui">
+            <div class="badge">SKOR: <span id="score">0</span></div>
+            <div class="badge" id="timer">02:00</div>
+        </div>
+
+        <div class="question-text">
+            Tari Kecak yang menampilkan pertunjukan seni tanpa alat musik melainkan suara vokal penarinya berasal dari daerah...
+        </div>
+
+        <div class="main-arena">
+            <div class="source-side">
+                <img src="images/tari-kecak.jpg" 
+                     alt="Tari Kecak" 
+                     class="kecak-image" 
+                     id="kecak-item" 
+                     draggable="true">
+                <small>SERET GAMBAR KE JAWABAN</small>
+            </div>
+
+            <div class="options-list">
+                <div class="drop-target" data-ans="A">A. Banten</div>
+                <div class="drop-target" data-ans="B">B. Jawa Timur</div>
+                <div class="drop-target" data-ans="C">C. Lombok</div>
+                <div class="drop-target" data-ans="D">D. Bali</div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="creators-box">
+        1. Arya Bilal Azzuri / 08 / XII RPL 3<br>
+        2. Fiha Aridhoi / 18 / XII RPL 3<br>
+        3. Muhammad Ayman Hammami / 26 / XII RPL 3
+    </div>
+
+    <script>
+        let totalScore = (parseInt(localStorage.getItem('totalScore')) || 0);
+        document.getElementById('score').innerText = totalScore;
+
+        const correctAns = "D";
+        let isDone = false;
+
+        const img = document.getElementById('kecak-item');
+        const targets = document.querySelectorAll('.drop-target');
+
+        img.ondragstart = (e) => {
+            if(isDone) return e.preventDefault();
+            e.dataTransfer.setData('text', 'kecak');
+        };
+
+        targets.forEach(target => {
+            target.ondragover = (e) => {
+                e.preventDefault();
+                if(!isDone) target.classList.add('hover');
+            };
+
+            target.ondragleave = () => target.classList.remove('hover');
+
+            target.ondrop = (e) => {
+                e.preventDefault();
+                if(isDone) return;
+                target.classList.remove('hover');
+                processAnswer(target);
+            };
+        });
+
+        function processAnswer(selected) {
+            isDone = true;
+            const choice = selected.dataset.ans;
+
+            if(choice === correctAns) {
+                selected.classList.add('is-correct');
+                selected.innerText = "YAK, BENAR! BALI";
+                QuizCore.updateScore(10);
+                totalScore = (parseInt(localStorage.getItem('totalScore')) || 0);
+                document.getElementById('score').innerText = totalScore;
+                document.body.style.backgroundColor = "var(--correct)";
+                setTimeout(() => window.location.href = 'soal9.html', 1500);
+            } else {
+                selected.classList.add('is-wrong');
+                document.body.style.backgroundColor = "var(--wrong)";
+                // Beri tanda pada jawaban yang benar
+                targets.forEach(t => {
+                    if(t.dataset.ans === correctAns) t.classList.add('is-correct');
+                });
+                setTimeout(() => window.location.href = 'soal9.html', 2000);
+            }
+        }
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Soal 3 - Alat Musik Kolintang</title>
+    <style>
+        :root {
+            --bg: #000000;
+            --card: #ffffff;
+            --accent: #ff00ea; /* Pink Neon Brutalist */
+            --correct: #00ff88;
+            --wrong: #ff0055;
+            --text: #000000;
+            --border: 5px solid #000000;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Arial Black', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+            touch-action: none;
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+        }
+
+        #particles {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1;
+        }
+
+        .quiz-card {
+            background: var(--card);
+            border: var(--border);
+            box-shadow: 15px 15px 0px var(--accent);
+            width: 95vw;
+            max-width: 900px;
+            padding: 30px;
+            position: relative;
+            z-index: 10;
+            animation: pageIn 0.8s forwards;
+        }
+
+        @keyframes pageIn {
+            0% { transform: translateY(50px); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+
+        .header-ui {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .badge {
+            border: 3px solid #000;
+            padding: 8px 15px;
+            background: #fff;
+            box-shadow: 4px 4px 0px #000;
+        }
+
+        .instruction {
+            background: #f0f0f0;
+            padding: 10px;
+            border-left: 5px solid var(--accent);
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+        }
+
+        .game-area {
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 60px;
+            position: relative;
+            min-height: 400px;
+        }
+
+        #connection-canvas {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        .node-column {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 15px;
+            z-index: 10;
+        }
+
+        .option-node {
+            background: #fff;
+            border: 3px solid #000;
+            padding: 12px;
+            font-size: 0.8rem;
+            position: relative;
+            box-shadow: 4px 4px 0px #000;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+        }
+
+        .image-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .image-target {
+            border: var(--border);
+            padding: 10px;
+            background: #fff;
+            position: relative;
+            width: 100%;
+            max-width: 250px;
+        }
+
+        .image-target img {
+            width: 100%;
+            display: block;
+            pointer-events: none;
+        }
+
+        /* Anchor Points */
+        .anchor {
+            width: 20px;
+            height: 20px;
+            background: #000;
+            border: 3px solid var(--accent);
+            border-radius: 50%;
+            position: absolute;
+            z-index: 20;
+            cursor: crosshair;
+        }
+
+        /* Titik nempel di kanan kotak deskripsi */
+        .anchor-right {
+            right: -10px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        /* Titik nempel di kiri kotak gambar */
+        .anchor-left {
+            left: -10px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .is-wrong { animation: shake 0.5s; border-color: var(--wrong); }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .creators-box {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            z-index: 100;
+            background: #fff;
+            border: 3px solid #000;
+            padding: 10px;
+            box-shadow: 5px 5px 0px #000;
+            font-family: 'Arial Black', sans-serif;
+            font-size: 10px;
+            line-height: 1.4;
+            text-transform: uppercase;
+        }
+    </style>
+    <script src="quiz-core.js"></script>
+</head>
+<body>
+
+    <canvas id="particles"></canvas>
+
+    <div class="quiz-card">
+        <div class="header-ui">
+            <div class="badge">SKOR: <span id="score-val">0</span></div>
+            <div class="badge" id="timer">02:00</div>
+        </div>
+
+        <div class="instruction">
+            <strong>PERHATIKAN GAMBAR ALAT MUSIK BERIKUT.</strong><br>
+            Tarik titik hitam dari deskripsi yang benar ke arah titik di samping gambar Kolintang!
+        </div>
+
+        <div class="game-area" id="game-container">
+            <canvas id="connection-canvas"></canvas>
+
+            <div class="node-column" id="options-list">
+                </div>
+
+            <div class="image-container">
+                <div class="image-target" id="main-target">
+                    <img src="images/kolintang.jpg" alt="Kolintang">
+                    <div class="anchor anchor-left" id="target-anchor"></div>
+                </div>
+                <p style="margin-top:15px; font-size: 0.9rem; letter-spacing: 2px;">KOLINTANG</p>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="creators-box">
+        1. Arya Bilal Azzuri / 08 / XII RPL 3<br>
+        2. Fiha Aridhoi / 18 / XII RPL 3<br>
+        3. Muhammad Ayman Hammami / 26 / XII RPL 3
+    </div>
+
+    <script>
+        const canvas = document.getElementById('connection-canvas');
+        const ctx = canvas.getContext('2d');
+        const container = document.getElementById('game-container');
+        
+        let totalScore = (parseInt(localStorage.getItem('totalScore')) || 0);
+        document.getElementById('score-val').innerText = totalScore;
+
+        let isDone = false;
+        let isDragging = false;
+        let startPos = { x: 0, y: 0 };
+        let currentPos = { x: 0, y: 0 };
+        let activeNode = null;
+
+        const quizData = {
+            correct: "Alat musik pukul khas Sulawesi Utara yang terbuat dari kayu khusus dan dimainkan secara ansambel.",
+            options: [
+                "Alat musik pukul khas Sulawesi Utara yang terbuat dari kayu khusus dan dimainkan secara ansambel.",
+                "Alat musik gesek tradisional suku Dayak yang dawainya terbuat dari serat pohon.",
+                "Instrumen tiup dari bambu asal Jawa Barat yang menghasilkan nada diatonis.",
+                "Alat musik petik dawai tunggal yang sering dimainkan di daerah pesisir pantai."
+            ]
+        };
+
+        function resize() {
+            canvas.width = container.offsetWidth;
+            canvas.height = container.offsetHeight;
+        }
+        window.addEventListener('resize', resize);
+        setTimeout(resize, 100);
+
+        const listWrap = document.getElementById('options-list');
+        [...quizData.options].sort(() => Math.random() - 0.5).forEach((text, i) => {
+            const div = document.createElement('div');
+            div.className = 'option-node';
+            div.innerText = text;
+            div.dataset.value = text;
+            
+            const anchor = document.createElement('div');
+            anchor.className = 'anchor anchor-right';
+            
+            const handleStart = (e) => {
+                if (isDone) return;
+                isDragging = true;
+                activeNode = div;
+                const rect = anchor.getBoundingClientRect();
+                const contRect = container.getBoundingClientRect();
+                startPos = {
+                    x: rect.left - contRect.left + 10,
+                    y: rect.top - contRect.top + 10
+                };
+            };
+
+            anchor.onmousedown = handleStart;
+            anchor.ontouchstart = (e) => handleStart(e.touches[0]);
+
+            div.appendChild(anchor);
+            listWrap.appendChild(div);
+        });
+
+        function updatePos(e) {
+            if (!isDragging) return;
+            const contRect = container.getBoundingClientRect();
+            currentPos = {
+                x: (e.clientX || e.touches[0].clientX) - contRect.left,
+                y: (e.clientY || e.touches[0].clientY) - contRect.top
+            };
+            drawLines();
+        }
+
+        window.onmousemove = updatePos;
+        window.ontouchmove = updatePos;
+
+        const handleEnd = () => {
+            if (!isDragging) return;
+            isDragging = false;
+            
+            const targetAnchor = document.getElementById('target-anchor');
+            const tRect = targetAnchor.getBoundingClientRect();
+            const contRect = container.getBoundingClientRect();
+            
+            const targetX = tRect.left - contRect.left + 10;
+            const targetY = tRect.top - contRect.top + 10;
+
+            const dist = Math.hypot(currentPos.x - targetX, currentPos.y - targetY);
+
+            if (dist < 40) {
+                checkAnswer(activeNode.dataset.value, targetX, targetY);
+            } else {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }
+        };
+
+        window.onmouseup = handleEnd;
+        window.ontouchend = handleEnd;
+
+        function drawLines(customColor = 'var(--accent)') {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.beginPath();
+            ctx.moveTo(startPos.x, startPos.y);
+            ctx.lineTo(currentPos.x, currentPos.y);
+            ctx.strokeStyle = customColor;
+            ctx.lineWidth = 4;
+            ctx.lineCap = 'round';
+            ctx.stroke();
+        }
+
+        function checkAnswer(val, tx, ty) {
+            isDone = true;
+            currentPos = { x: tx, y: ty }; // Snap ke titik
+
+            if (val === quizData.correct) {
+                QuizCore.updateScore(10);
+                totalScore = (parseInt(localStorage.getItem('totalScore')) || 0);
+                document.getElementById('score-val').innerText = totalScore;
+                document.body.style.backgroundColor = "var(--correct)";
+                drawLines('var(--correct)');
+                activeNode.style.borderColor = 'var(--correct)';
+                setTimeout(() => window.location.href = 'soal4.html', 1500);
+            } else {
+                drawLines('var(--wrong)');
+                document.body.style.backgroundColor = "var(--wrong)";
+                activeNode.classList.add('is-wrong');
+                document.querySelectorAll('.option-node').forEach(n => {
+                    if(n.dataset.value === quizData.correct) n.style.background = "#e6fff4";
+                });
+                setTimeout(() => window.location.href = 'soal4.html', 2500);
+            }
+        }
+
+        // Timer & BG Particles sama seperti sebelumnya
+
+        const pCanvas = document.getElementById('particles');
+        const pCtx = pCanvas.getContext('2d');
+        pCanvas.width = window.innerWidth; pCanvas.height = window.innerHeight;
+        let particles = [];
+        for(let i=0; i<30; i++) particles.push({x: Math.random()*pCanvas.width, y: Math.random()*pCanvas.height, s: Math.random()*0.3});
+        function anim() {
+            pCtx.clearRect(0,0,pCanvas.width,pCanvas.height);
+            pCtx.fillStyle = "rgba(255,0,234,0.15)";
+            particles.forEach(p => {
+                pCtx.beginPath(); pCtx.arc(p.x, p.y, 1.5, 0, Math.PI*2); pCtx.fill();
+                p.y -= p.s; if(p.y < 0) p.y = pCanvas.height;
+            });
+            requestAnimationFrame(anim);
+        }
+        anim();
+    </script>
+</body>
+</html>

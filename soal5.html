@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Soal 5 - Suku Grouping</title>
+    <style>
+        :root {
+            --bg: #000000;
+            --card: #ffffff;
+            --accent: #ffee00;
+            --correct: #00ff88;
+            --wrong: #ff0055;
+            --border: 5px solid #000000;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Arial Black', sans-serif; }
+
+        body {
+            background-color: var(--bg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            transition: background-color 0.5s ease;
+        }
+
+        .quiz-container {
+            background: var(--card);
+            border: var(--border);
+            box-shadow: 15px 15px 0px var(--accent);
+            width: 100%;
+            max-width: 900px;
+            padding: 25px;
+        }
+
+        .header-ui {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .badge {
+            border: 3px solid #000;
+            padding: 5px 15px;
+            background: #fff;
+        }
+
+        .suku-pool {
+            background: #eee;
+            border: 3px dashed #000;
+            padding: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 20px;
+            min-height: 100px;
+        }
+
+        .suku-card {
+            background: #fff;
+            border: 3px solid #000;
+            padding: 10px 15px;
+            cursor: grab;
+            box-shadow: 4px 4px 0px #000;
+            font-size: 0.8rem;
+            user-select: none;
+            transition: transform 0.2s, background-color 0.3s;
+        }
+
+        .suku-card:active { cursor: grabbing; transform: scale(1.1); }
+
+        .islands-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .island-box {
+            border: var(--border);
+            min-height: 180px;
+            background: #fff;
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
+        }
+
+        .island-box h3 {
+            background: #000;
+            color: #fff;
+            text-align: center;
+            padding: 5px 0;
+            margin-bottom: 10px;
+            font-size: 0.8rem;
+        }
+
+        .drop-zone {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            border: 2px dashed transparent;
+        }
+
+        .drop-zone.hover { 
+            border-color: #000; 
+            background: #f0f0f0; 
+        }
+
+        #btn-cek {
+            width: 100%;
+            padding: 15px;
+            background: #000;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            font-family: 'Arial Black', sans-serif;
+            font-size: 1rem;
+            display: none; 
+            transition: 0.3s;
+        }
+
+        #btn-cek:hover { 
+            background: var(--accent); 
+            color: #000; 
+            transform: translateY(-3px);
+        }
+
+        /* Status Hasil */
+        .result-card-wrong { 
+            background: var(--wrong) !important; 
+            color: #fff !important; 
+            border-color: #fff !important;
+        }
+        .result-card-correct { 
+            background: var(--correct) !important; 
+            color: #000 !important; 
+        }
+
+        .creators-box {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            z-index: 100;
+            background: #fff;
+            border: 3px solid #000;
+            padding: 10px;
+            box-shadow: 5px 5px 0px #000;
+            font-family: 'Arial Black', sans-serif;
+            font-size: 10px;
+            line-height: 1.4;
+            text-transform: uppercase;
+        }
+    </style>
+    <script src="quiz-core.js"></script>
+</head>
+<body>
+
+    <div class="quiz-container">
+        <div class="header-ui">
+            <div class="badge">SKOR: <span id="score">0</span></div>
+            <div class="badge" id="timer">02:00</div>
+        </div>
+
+        <h2 style="font-size: 0.9rem; margin-bottom: 15px; text-align: center;">
+            SOAL 5: KELOMPOKKAN SEMUA SUKU KE PULAU YANG TEPAT!
+        </h2>
+
+        <div class="suku-pool" id="pool" ondrop="drop(event)" ondragover="allowDrop(event)">
+            </div>
+
+        <div class="islands-grid">
+            <div class="island-box" data-island="Sumatra">
+                <h3>SUMATRA</h3>
+                <div class="drop-zone" id="zone-Sumatra" ondrop="drop(event)" ondragover="allowDrop(event)" ondragenter="dragEnter(event)" ondragleave="dragLeave(event)"></div>
+            </div>
+            
+            <div class="island-box" data-island="Sulawesi">
+                <h3>SULAWESI</h3>
+                <div class="drop-zone" id="zone-Sulawesi" ondrop="drop(event)" ondragover="allowDrop(event)" ondragenter="dragEnter(event)" ondragleave="dragLeave(event)"></div>
+            </div>
+            
+            <div class="island-box" data-island="Kalimantan">
+                <h3>KALIMANTAN</h3>
+                <div class="drop-zone" id="zone-Kalimantan" ondrop="drop(event)" ondragover="allowDrop(event)" ondragenter="dragEnter(event)" ondragleave="dragLeave(event)"></div>
+            </div>
+        </div>
+
+        <button id="btn-cek" onclick="validasiJawaban()">CEK JAWABAN</button>
+
+    </div>
+
+    <div class="creators-box">
+        1. Arya Bilal Azzuri / 08 / XII RPL 3<br>
+        2. Fiha Aridhoi / 18 / XII RPL 3<br>
+        3. Muhammad Ayman Hammami / 26 / XII RPL 3
+    </div>
+
+    <script>
+        let totalScore = (parseInt(localStorage.getItem('totalScore')) || 0);
+        document.getElementById('score').innerText = totalScore;
+
+        const dataSuku = [
+            { id: "s1", nama: "Suku Batak", asal: "Sumatra" },
+            { id: "s2", nama: "Suku Minangkabau", asal: "Sumatra" },
+            { id: "s3", nama: "Suku Bugis", asal: "Sulawesi" },
+            { id: "s4", nama: "Suku Toraja", asal: "Sulawesi" },
+            { id: "s5", nama: "Suku Dayak", asal: "Kalimantan" },
+            { id: "s6", nama: "Suku Banjar", asal: "Kalimantan" }
+        ];
+
+        let isDone = false;
+
+        // Render Kartu Suku secara acak
+        const pool = document.getElementById('pool');
+        [...dataSuku].sort(() => Math.random() - 0.5).forEach(suku => {
+            const card = document.createElement('div');
+            card.className = 'suku-card';
+            card.id = suku.id;
+            card.innerText = suku.nama;
+            card.draggable = true;
+            card.dataset.asal = suku.asal;
+            card.ondragstart = (e) => {
+                if(isDone) return e.preventDefault();
+                e.dataTransfer.setData("text", e.target.id);
+            };
+            pool.appendChild(card);
+        });
+
+        // Logika Drag and Drop
+        function allowDrop(e) { e.preventDefault(); }
+        
+        function dragEnter(e) {
+            if(e.target.classList.contains('drop-zone')) e.target.classList.add('hover');
+        }
+
+        function dragLeave(e) {
+            if(e.target.classList.contains('drop-zone')) e.target.classList.remove('hover');
+        }
+
+        function drop(e) {
+            e.preventDefault();
+            if(isDone) return;
+            
+            const data = e.dataTransfer.getData("text");
+            const card = document.getElementById(data);
+            
+            let target = e.target;
+            // Cari elemen drop-zone terdekat ke atas
+            while (target && !target.classList.contains('drop-zone') && target.id !== 'pool') {
+                target = target.parentNode;
+            }
+
+            if (target) {
+                target.appendChild(card);
+                if(target.classList.contains('drop-zone')) target.classList.remove('hover');
+                checkAllPlaced();
+            }
+        }
+
+        function checkAllPlaced() {
+            const placedCount = document.querySelectorAll('.island-box .suku-card').length;
+            // Tombol cek muncul hanya jika semua 6 suku sudah ditaruh di pulau (bukan di pool)
+            document.getElementById('btn-cek').style.display = (placedCount === 6) ? 'block' : 'none';
+        }
+
+        function validasiJawaban() {
+            isDone = true;
+            document.getElementById('btn-cek').style.display = 'none';
+            
+            let benar = 0;
+            let salah = 0;
+
+            const islands = document.querySelectorAll('.island-box');
+            islands.forEach(island => {
+                const namaPulau = island.dataset.island;
+                const cardsInIsland = island.querySelectorAll('.suku-card');
+                
+                cardsInIsland.forEach(card => {
+                    if (card.dataset.asal === namaPulau) {
+                        benar++;
+                        card.classList.add('result-card-correct');
+                    } else {
+                        salah++;
+                        card.classList.add('result-card-wrong');
+                    }
+                });
+            });
+
+            // LOGIKA: Lulus jika Benar >= Salah
+            if (benar >= salah) {
+                QuizCore.updateScore(10);
+                totalScore = (parseInt(localStorage.getItem('totalScore')) || 0);
+                document.getElementById('score').innerText = totalScore;
+                document.body.style.backgroundColor = "var(--correct)";
+            } else {
+                // EFEK SALAH: Background Full Merah
+                document.body.style.backgroundColor = "var(--wrong)";
+            }
+
+            setTimeout(() => {
+                window.location.href = 'soal6.html';
+            }, 2500);
+        }
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Soal 9 - Pakaian Adat Drag & Drop</title>
+    <style>
+        :root {
+            --bg: #000000;
+            --card: #ffffff;
+            --accent: #ffee00;
+            --correct: #00ff88;
+            --wrong: #ff0055;
+            --border: 5px solid #000000;
+        }
+
+        * { 
+            box-sizing: border-box; 
+            margin: 0; padding: 0; 
+            font-family: 'Arial Black', sans-serif;
+            user-select: none;
+        }
+
+        body {
+            background-color: var(--bg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            transition: background 0.5s;
+        }
+
+        .quiz-container {
+            background: var(--card);
+            border: var(--border);
+            box-shadow: 15px 15px 0px var(--accent);
+            width: 100%;
+            max-width: 800px;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header-ui {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .badge {
+            border: 3px solid #000;
+            padding: 5px 15px;
+            background: #fff;
+        }
+
+        .image-section {
+            margin: 20px 0;
+            border: 3px solid #000;
+            padding: 10px;
+            background: #f9f9f9;
+        }
+
+        .image-section img {
+            max-width: 100%;
+            height: 250px;
+            object-fit: contain;
+            pointer-events: none; /* Agar gambar tidak ikut terseret */
+        }
+
+        .drop-zone {
+            border: 4px dashed #000;
+            min-height: 100px;
+            margin: 20px 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 15px;
+            background: #f0f0f0;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            font-size: 0.8rem;
+            color: #666;
+        }
+
+        /* Saat ada item di dalamnya, hilangkan instruksi teks */
+        .drop-zone:not(:empty) {
+            border-style: solid;
+            background: #fff;
+        }
+
+        .drop-zone.hover { 
+            background: var(--accent); 
+            transform: scale(1.02);
+            border-color: #000;
+        }
+
+        .options-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            margin-top: 20px;
+            padding: 10px;
+            background: #eee;
+            border: 3px solid #000;
+        }
+
+        .draggable-option {
+            background: #fff;
+            border: 3px solid #000;
+            padding: 15px;
+            cursor: grab;
+            font-size: 0.85rem;
+            box-shadow: 4px 4px 0px #000;
+            text-align: left;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .draggable-option:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0px #000;
+        }
+
+        .draggable-option:active { 
+            cursor: grabbing; 
+        }
+
+        .dragging {
+            opacity: 0.5;
+            transform: scale(0.95);
+        }
+
+        #btn-cek {
+            margin-top: 25px;
+            width: 100%;
+            padding: 15px;
+            background: #000;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            font-size: 1.2rem;
+            display: none;
+            transition: 0.3s;
+        }
+
+        #btn-cek:hover { 
+            background: var(--accent); 
+            color: #000;
+            transform: translateY(-5px);
+        }
+
+        .correct-ans { background: var(--correct) !important; color: #000 !important; }
+        .wrong-ans { background: var(--wrong) !important; color: white !important; }
+
+        .creators-box {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            z-index: 100;
+            background: #fff;
+            border: 3px solid #000;
+            padding: 10px;
+            box-shadow: 5px 5px 0px #000;
+            font-family: 'Arial Black', sans-serif;
+            font-size: 10px;
+            line-height: 1.4;
+            text-transform: uppercase;
+        }
+    </style>
+    <script src="quiz-core.js"></script>
+</head>
+<body>
+
+    <div class="quiz-container">
+        <div class="header-ui">
+            <div class="badge">SKOR: <span id="score">0</span></div>
+            <div class="badge" id="timer">02:00</div>
+        </div>
+
+        <h3 style="font-size: 1rem; margin-bottom: 5px;">SOAL 9</h3>
+        <p style="font-size: 0.85rem; margin-bottom: 10px;">SERET CIRI KHAS SUKU BANGSA YANG SESUAI DENGAN PAKAIAN ADAT INI!</p>
+
+        <div class="image-section">
+            <img src="images/minang.jpg" alt="Pakaian Adat">
+        </div>
+
+        <div class="drop-zone" id="target-zone" ondrop="drop(event)" ondragover="allowDrop(event)" ondragenter="dragEnter(event)" ondragleave="dragLeave(event)">
+            TARUH JAWABAN DI SINI
+        </div>
+
+        <div class="options-container" id="options-pool" ondrop="drop(event)" ondragover="allowDrop(event)">
+            <div class="draggable-option" id="opt1" draggable="true" ondragstart="drag(event)" ondragend="dragEnd(event)" data-correct="true">
+                Suku bangsa yang menganut sistem kekerabatan matrilineal dan memiliki tradisi merantau yang kuat.
+            </div>
+            <div class="draggable-option" id="opt2" draggable="true" ondragstart="drag(event)" ondragend="dragEnd(event)" data-correct="false">
+                Suku bangsa dengan budaya maritim dan keterampilan pelayaran yang tangguh.
+            </div>
+            <div class="draggable-option" id="opt3" draggable="true" ondragstart="drag(event)" ondragend="dragEnd(event)" data-correct="false">
+                Penduduk asli Pulau Papua dengan ciri fisik Melanesoid.
+            </div>
+            <div class="draggable-option" id="opt4" draggable="true" ondragstart="drag(event)" ondragend="dragEnd(event)" data-correct="false">
+                Suku bangsa terbesar di Indonesia yang mayoritas mendiami Pulau Jawa.
+            </div>
+            <div class="draggable-option" id="opt5" draggable="true" ondragstart="drag(event)" ondragend="dragEnd(event)" data-correct="false">
+                Kelompok masyarakat dari Sulawesi Utara yang dikenal sebagai Orang Manado.
+            </div>
+        </div>
+
+        <button id="btn-cek" onclick="validasi()">VALIDASI JAWABAN</button>
+
+    </div>
+
+    <div class="creators-box">
+        1. Arya Bilal Azzuri / 08 / XII RPL 3<br>
+        2. Fiha Aridhoi / 18 / XII RPL 3<br>
+        3. Muhammad Ayman Hammami / 26 / XII RPL 3
+    </div>
+
+    <script>
+        let totalScore = (parseInt(localStorage.getItem('totalScore')) || 0);
+        document.getElementById('score').innerText = totalScore;
+
+        let isDone = false;
+
+        function allowDrop(e) { e.preventDefault(); }
+        
+        function dragEnter(e) {
+            // Memastikan hover hanya aktif pada zona yang benar
+            let target = e.target.closest('.drop-zone, .options-container');
+            if(target) target.classList.add('hover');
+        }
+        
+        function dragLeave(e) {
+            let target = e.target.closest('.drop-zone, .options-container');
+            if(target) target.classList.remove('hover');
+        }
+
+        function drag(e) {
+            if(isDone) return;
+            e.target.classList.add('dragging');
+            e.dataTransfer.setData("text", e.target.id);
+        }
+
+        function dragEnd(e) {
+            e.target.classList.remove('dragging');
+            // Bersihkan semua sisa efek hover
+            document.querySelectorAll('.hover').forEach(el => el.classList.remove('hover'));
+        }
+
+        function drop(e) {
+            e.preventDefault();
+            if(isDone) return;
+            
+            const data = e.dataTransfer.getData("text");
+            const draggedElement = document.getElementById(data);
+            
+            // Cari elemen target terdekat (apakah itu zona drop atau pool)
+            let target = e.target.closest('.drop-zone, .options-container');
+            
+            if (target) {
+                // Jika drop ke target-zone, hanya boleh 1 item
+                if(target.id === "target-zone") {
+                    if(target.children.length > 0) {
+                        // Jika sudah ada isinya, kembalikan isi lama ke pool
+                        document.getElementById('options-pool').appendChild(target.children[0]);
+                    }
+                    target.innerText = ""; // Hapus teks instruksi
+                }
+
+                target.appendChild(draggedElement);
+                target.classList.remove('hover');
+                
+                // Cek apakah instruksi perlu dimunculkan kembali di zona drop
+                const zone = document.getElementById('target-zone');
+                if(zone.children.length === 0) {
+                    zone.innerText = "TARUH JAWABAN DI SINI";
+                }
+            }
+
+            // Tampilkan tombol cek hanya jika ada sesuatu di zona target
+            const targetZone = document.getElementById('target-zone');
+            document.getElementById('btn-cek').style.display = (targetZone.children.length > 0) ? 'block' : 'none';
+        }
+
+        function validasi() {
+            isDone = true;
+            document.getElementById('btn-cek').style.display = 'none';
+            
+            const zone = document.getElementById('target-zone');
+            const selectedOption = zone.children[0];
+            const isCorrect = selectedOption.dataset.correct === "true";
+
+            // Matikan draggable semua opsi
+            document.querySelectorAll('.draggable-option').forEach(opt => opt.draggable = false);
+
+            if (isCorrect) {
+                selectedOption.classList.add('correct-ans');
+                document.body.style.backgroundColor = "var(--correct)";
+                QuizCore.updateScore(10);
+                totalScore = (parseInt(localStorage.getItem('totalScore')) || 0);
+                document.getElementById('score').innerText = totalScore;
+            } else {
+                selectedOption.classList.add('wrong-ans');
+                document.body.style.backgroundColor = "var(--wrong)";
+                // Tunjukkan yang mana yang benar
+                document.querySelector('[data-correct="true"]').classList.add('correct-ans');
+            }
+
+            setTimeout(() => {
+                window.location.href = 'soal10.html';
+            }, 3000);
+        }
+
+    </script>
+</body>
+</html>

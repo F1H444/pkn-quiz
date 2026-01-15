@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Soal - Pakaian Adat Ulos</title>
+    <style>
+        :root {
+            --bg: #000000;
+            --card: #ffffff;
+            --accent: #ffee00;
+            --correct: #00ff88;
+            --wrong: #ff0055;
+            --border: 5px solid #000000;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Arial Black', sans-serif; }
+
+        body {
+            background-color: var(--bg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        .quiz-container {
+            background: var(--card);
+            border: var(--border);
+            box-shadow: 15px 15px 0px var(--accent);
+            width: 95vw;
+            max-width: 800px;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .header-ui {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .badge {
+            border: 3px solid #000;
+            padding: 5px 15px;
+            background: #fff;
+        }
+
+        .question-box {
+            background: #000;
+            color: #fff;
+            padding: 20px;
+            text-align: center;
+            font-size: 1.1rem;
+        }
+
+        .game-area {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 30px;
+            align-items: center;
+        }
+
+        /* Objek yang diseret */
+        .photo-container {
+            text-align: center;
+        }
+
+        #ulos-img {
+            width: 100%;
+            border: var(--border);
+            cursor: grab;
+            transition: transform 0.2s;
+            background: #fff;
+        }
+
+        #ulos-img:active { cursor: grabbing; transform: scale(0.95); }
+
+        /* Drop Zones */
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+
+        .option-target {
+            border: 3px solid #000;
+            padding: 15px;
+            background: #f0f0f0;
+            font-size: 1rem;
+            cursor: default;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 60px;
+        }
+
+        .option-target.hover {
+            background: var(--accent);
+            border-style: dashed;
+            transform: translateX(10px);
+        }
+
+        .is-correct { background: var(--correct) !important; }
+        .is-wrong { background: var(--wrong) !important; color: #fff; }
+
+        small { display: block; margin-top: 10px; font-size: 0.7rem; color: #666; }
+
+        .creators-box {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            z-index: 100;
+            background: #fff;
+            border: 3px solid #000;
+            padding: 10px;
+            box-shadow: 5px 5px 0px #000;
+            font-family: 'Arial Black', sans-serif;
+            font-size: 10px;
+            line-height: 1.4;
+            text-transform: uppercase;
+        }
+    </style>
+    <script src="quiz-core.js"></script>
+</head>
+<body>
+
+    <div class="quiz-container">
+        <div class="header-ui">
+            <div class="badge">SKOR: <span id="score">0</span></div>
+            <div class="badge" id="timer">02:00</div>
+        </div>
+
+        <div class="question-box">
+            Pakaian adat Ulos yang sering digunakan dalam upacara adat dan pernikahan berasal dari provinsi...
+        </div>
+
+        <div class="game-area">
+            <div class="photo-container">
+                <img src="images/ulos.jpg" 
+                     id="ulos-img" 
+                     draggable="true" 
+                     alt="Kain Ulos">
+                <small>TARIK GAMBAR INI KE JAWABAN BENAR</small>
+            </div>
+
+            <div class="options-grid">
+                <div class="option-target" data-ans="A">A. Riau</div>
+                <div class="option-target" data-ans="B">B. Sumatra Barat</div>
+                <div class="option-target" data-ans="C">C. Sumatra Utara</div>
+                <div class="option-target" data-ans="D">D. Aceh</div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="creators-box">
+        1. Arya Bilal Azzuri / 08 / XII RPL 3<br>
+        2. Fiha Aridhoi / 18 / XII RPL 3<br>
+        3. Muhammad Ayman Hammami / 26 / XII RPL 3
+    </div>
+
+    <script>
+        let totalScore = (parseInt(localStorage.getItem('totalScore')) || 0);
+        document.getElementById('score').innerText = totalScore;
+
+        const correctAns = "C";
+        const targets = document.querySelectorAll('.option-target');
+        const img = document.getElementById('ulos-img');
+        let isDone = false;
+
+        // Drag Logic
+        img.ondragstart = (e) => {
+            if(isDone) return e.preventDefault();
+            e.dataTransfer.setData('text', 'ulos');
+        };
+
+        targets.forEach(target => {
+            target.ondragover = (e) => {
+                e.preventDefault();
+                if(!isDone) target.classList.add('hover');
+            };
+
+            target.ondragleave = () => {
+                target.classList.remove('hover');
+            };
+
+            target.ondrop = (e) => {
+                e.preventDefault();
+                if(isDone) return;
+                target.classList.remove('hover');
+                checkAnswer(target);
+            };
+        });
+
+        function checkAnswer(selected) {
+            isDone = true;
+            const choice = selected.dataset.ans;
+
+            if(choice === correctAns) {
+                selected.classList.add('is-correct');
+                selected.innerText = "BENAR! SUMATRA UTARA";
+                QuizCore.updateScore(10);
+                totalScore = (parseInt(localStorage.getItem('totalScore')) || 0);
+                document.getElementById('score').innerText = totalScore;
+                document.body.style.backgroundColor = "var(--correct)";
+                setTimeout(() => window.location.href = 'soal8.html', 1500);
+            } else {
+                selected.classList.add('is-wrong');
+                document.body.style.backgroundColor = "var(--wrong)";
+                // Tunjukkan yang benar
+                targets.forEach(t => {
+                    if(t.dataset.ans === correctAns) t.classList.add('is-correct');
+                });
+                setTimeout(() => window.location.href = 'soal8.html', 2000);
+            }
+        }
+
+    </script>
+</body>
+</html>

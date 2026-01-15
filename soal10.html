@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Soal 5 - Senjata Tradisional</title>
+    <style>
+        :root {
+            --bg: #000000;
+            --card: #ffffff;
+            --accent: #ffee00;
+            --correct: #00ff88;
+            --wrong: #ff0055;
+            --border: 5px solid #000000;
+        }
+
+        * { 
+            box-sizing: border-box; 
+            margin: 0; 
+            padding: 0; 
+            font-family: 'Arial Black', sans-serif;
+            user-select: none; /* Mencegah teks terblokir saat menarik tali */
+        }
+
+        body {
+            background-color: var(--bg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+            touch-action: none;
+        }
+
+        .quiz-container {
+            background: var(--card);
+            border: var(--border);
+            box-shadow: 15px 15px 0px var(--accent);
+            width: 95vw;
+            max-width: 900px;
+            padding: 20px;
+            position: relative;
+        }
+
+        .header-ui {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+
+        .badge {
+            border: 3px solid #000;
+            padding: 5px 15px;
+            background: #fff;
+        }
+
+        .instruction {
+            background: #000; color: #fff;
+            padding: 10px; text-align: center;
+            margin-bottom: 15px; font-size: 0.8rem;
+        }
+
+        .connection-arena {
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+            padding: 20px 0;
+        }
+
+        .column {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            z-index: 10;
+        }
+
+        /* Kotak Gambar di Kiri */
+        .item-img {
+            width: 120px;
+            height: 90px;
+            background: #fff;
+            border: 3px solid #000;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 5px;
+        }
+
+        .item-img img {
+            max-width: 100%;
+            max-height: 100%;
+            pointer-events: none;
+        }
+
+        /* Kotak Nama di Kanan */
+        .item-text {
+            height: 90px;
+            min-width: 180px;
+            background: #fff;
+            border: 3px solid #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            font-size: 0.9rem;
+        }
+
+        /* Titik/Dot */
+        .dot {
+            width: 18px;
+            height: 18px;
+            background: #000;
+            border-radius: 50%;
+            cursor: crosshair;
+            position: absolute;
+            z-index: 20;
+        }
+
+        #left-col .dot { right: -25px; top: 50%; transform: translateY(-50%); }
+        #right-col .dot { left: -25px; top: 50%; transform: translateY(-50%); }
+
+        .dot:hover { transform: translateY(-50%) scale(1.3); background: var(--accent); }
+        .dot.connected { background: var(--accent); }
+
+        #connector-canvas {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        #validate-btn:hover {
+            background: var(--accent);
+            color: #000;
+        }
+
+        .creators-box {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            z-index: 100;
+            background: #fff;
+            border: 3px solid #000;
+            padding: 10px;
+            box-shadow: 5px 5px 0px #000;
+            font-family: 'Arial Black', sans-serif;
+            font-size: 10px;
+            line-height: 1.4;
+            text-transform: uppercase;
+        }
+    </style>
+    <script src="quiz-core.js"></script>
+</head>
+<body>
+
+    <div class="quiz-container">
+        <div class="header-ui">
+            <div class="badge">SKOR: <span id="score">0</span></div>
+            <div class="badge" id="timer">02:00</div>
+        </div>
+
+        <div class="instruction">TARIK TALI DARI TITIK GAMBAR KE TITIK NAMA SENJATA!</div>
+
+        <div class="connection-arena">
+            <canvas id="connector-canvas"></canvas>
+            
+            <div class="column" id="left-col">
+                <div class="item-img" data-match="keris">
+                    <img src="images/keris.jpg" alt="Keris">
+                    <div class="dot source"></div>
+                </div>
+                <div class="item-img" data-match="mandau">
+                    <img src="images/mandau.jpg" alt="Mandau">
+                    <div class="dot source"></div>
+                </div>
+                <div class="item-img" data-match="rencong">
+                    <img src="images/rencong.jpg" alt="Rencong">
+                    <div class="dot source"></div>
+                </div>
+                <div class="item-img" data-match="kujang">
+                    <img src="images/kujang.jpg" alt="Kujang">
+                    <div class="dot source"></div>
+                </div>
+                <div class="item-img" data-match="celurit">
+                    <img src="images/celurit.jpg" alt="Celurit">
+                    <div class="dot source"></div>
+                </div>
+            </div>
+
+            <div class="column" id="right-col">
+                <div class="item-text"> MANDAU <div class="dot target" id="mandau"></div></div>
+                <div class="item-text"> RENCONG <div class="dot target" id="rencong"></div></div>
+                <div class="item-text"> KERIS <div class="dot target" id="keris"></div></div>
+                <div class="item-text"> CELURIT <div class="dot target" id="celurit"></div></div>
+                <div class="item-text"> KUJANG <div class="dot target" id="kujang"></div></div>
+            </div>
+        </div>
+        <button id="validate-btn">PERIKSA JAWABAN</button>
+
+    </div>
+
+    <div class="creators-box">
+        1. Arya Bilal Azzuri / 08 / XII RPL 3<br>
+        2. Fiha Aridhoi / 18 / XII RPL 3<br>
+        3. Muhammad Ayman Hammami / 26 / XII RPL 3
+    </div>
+
+    <script>
+        let totalScore = (parseInt(localStorage.getItem('totalScore')) || 0);
+        document.getElementById('score').innerText = totalScore;
+
+        const canvas = document.getElementById('connector-canvas');
+        const ctx = canvas.getContext('2d');
+        const validateBtn = document.getElementById('validate-btn');
+        
+        let isDrawing = false;
+        let startDot = null;
+        let connections = [];
+        let currentMousePos = { x: 0, y: 0 };
+        let isDone = false;
+
+        function resizeCanvas() {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+            drawAll();
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        document.querySelectorAll('.source').forEach(dot => {
+            dot.addEventListener('mousedown', (e) => {
+                if(isDone || dot.classList.contains('connected')) return;
+                isDrawing = true;
+                startDot = dot;
+            });
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            if (!isDrawing) return;
+            const rect = canvas.getBoundingClientRect();
+            currentMousePos.x = e.clientX - rect.left;
+            currentMousePos.y = e.clientY - rect.top;
+            drawAll();
+        });
+
+        window.addEventListener('mouseup', (e) => {
+            if (!isDrawing) return;
+            const target = document.elementFromPoint(e.clientX, e.clientY);
+            
+            if (target && target.classList.contains('target') && !target.classList.contains('connected')) {
+                connections.push({
+                    fromEl: startDot,
+                    toEl: target,
+                    sourceId: startDot.parentNode.dataset.match,
+                    targetId: target.id
+                });
+                startDot.classList.add('connected');
+                target.classList.add('connected');
+
+                if (connections.length === 5) validateBtn.style.display = 'block';
+            }
+            isDrawing = false;
+            startDot = null;
+            drawAll();
+        });
+
+        validateBtn.onclick = () => {
+            isDone = true;
+            validateBtn.style.display = 'none';
+            let correctCount = 0;
+
+            connections.forEach(conn => {
+                if(conn.sourceId === conn.targetId) correctCount++;
+            });
+
+            if(correctCount === 5) {
+                QuizCore.updateScore(10);
+                totalScore = (parseInt(localStorage.getItem('totalScore')) || 0);
+                document.body.style.backgroundColor = "var(--correct)";
+                drawFinal('#00ff88');
+            } else {
+                document.body.style.backgroundColor = "var(--wrong)";
+                drawFinal('#ff0055');
+            }
+            setTimeout(() => window.location.href = 'selesai.html', 2000);
+        };
+
+        function drawAll() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.lineWidth = 4;
+            ctx.strokeStyle = '#000';
+            connections.forEach(c => drawLink(c.fromEl, c.toEl));
+            if (isDrawing && startDot) {
+                const rect = canvas.getBoundingClientRect();
+                const dRect = startDot.getBoundingClientRect();
+                ctx.beginPath();
+                ctx.moveTo(dRect.left + 9 - rect.left, dRect.top + 9 - rect.top);
+                ctx.lineTo(currentMousePos.x, currentMousePos.y);
+                ctx.stroke();
+            }
+        }
+
+        function drawLink(el1, el2) {
+            const rect = canvas.getBoundingClientRect();
+            const r1 = el1.getBoundingClientRect();
+            const r2 = el2.getBoundingClientRect();
+            ctx.beginPath();
+            ctx.moveTo(r1.left + 9 - rect.left, r1.top + 9 - rect.top);
+            ctx.lineTo(r2.left + 9 - rect.left, r2.top + 9 - rect.top);
+            ctx.stroke();
+        }
+
+        function drawFinal(color) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 6;
+            connections.forEach(c => drawLink(c.fromEl, c.toEl));
+        }
+
+    </script>
+</body>
+</html>

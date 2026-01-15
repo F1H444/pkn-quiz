@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Soal 1 - Analisis Budaya</title>
+    <style>
+        :root {
+            --bg: #000000;
+            --card: #ffffff;
+            --accent: #00f2ff; 
+            --correct: #00ff88;
+            --wrong: #ff0055;
+            --text: #000000;
+            --border-width: 5px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Arial Black', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            overflow: hidden;
+        }
+
+        #particles {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .quiz-card {
+            background: var(--card);
+            border: var(--border-width) solid #000;
+            box-shadow: 15px 15px 0px var(--accent);
+            width: 100%;
+            max-width: 1000px;
+            padding: 40px;
+            position: relative;
+            z-index: 10;
+            animation: pageIn 0.8s forwards cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        @keyframes pageIn {
+            0% { transform: translateY(50px); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+
+        .page-exit {
+            animation: pageOut 0.8s forwards cubic-bezier(0.7, 0, 0.3, 1) !important;
+        }
+
+        @keyframes pageOut {
+            0% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(0.9); opacity: 0; }
+        }
+
+        .ui-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .badge {
+            border: 3px solid #000;
+            padding: 10px 20px;
+            font-weight: 900;
+            text-transform: uppercase;
+            background: #fff;
+            box-shadow: 5px 5px 0px #000;
+        }
+
+        /* Container Soal */
+        .question-text {
+            background: #000;
+            color: #fff;
+            padding: 15px;
+            margin-bottom: 25px;
+            border-left: 10px solid var(--accent);
+            font-size: 1.1rem;
+            line-height: 1.4;
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            align-items: start;
+        }
+
+        @media (max-width: 850px) {
+            .content-grid { grid-template-columns: 1fr; }
+            body { overflow: auto; }
+        }
+
+        .img-frame {
+            border: var(--border-width) solid #000;
+            background: #eee;
+            margin-bottom: 20px;
+        }
+
+        .img-frame img {
+            width: 100%;
+            display: block;
+        }
+
+        .drop-zone {
+            height: 120px;
+            border: 5px dashed #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 15px;
+            font-weight: 800;
+            background: #f8f8f8;
+            transition: 0.3s;
+        }
+
+        .drop-zone.drag-over {
+            background: var(--accent);
+            border-style: solid;
+        }
+
+        .option-card {
+            background: #fff;
+            border: 3px solid #000;
+            padding: 15px 20px;
+            margin-bottom: 12px;
+            cursor: grab;
+            font-size: 0.9rem;
+            font-weight: 700;
+            box-shadow: 4px 4px 0px #000;
+            transition: 0.2s;
+        }
+
+        .option-card:hover {
+            transform: translate(-3px, -3px);
+            box-shadow: 8px 8px 0px var(--accent);
+        }
+
+        .correct-state { background: var(--correct) !important; }
+        .wrong-state { background: var(--wrong) !important; color: #fff !important; }
+        
+        .highlight-correct {
+            border: 5px solid var(--correct) !important;
+            animation: pulse 1s infinite alternate;
+        }
+
+        @keyframes pulse {
+            from { transform: scale(1); } to { transform: scale(0.98); }
+        }
+
+        .creators-box {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            z-index: 100;
+            background: #fff;
+            border: 3px solid #000;
+            padding: 10px;
+            box-shadow: 5px 5px 0px #000;
+            font-family: 'Arial Black', sans-serif;
+            font-size: 10px;
+            line-height: 1.4;
+            text-transform: uppercase;
+        }
+    </style>
+    <script src="quiz-core.js"></script>
+</head>
+<body>
+
+    <canvas id="particles"></canvas>
+
+    <div class="quiz-card">
+        <div class="ui-header">
+            <div class="badge">SKOR: <span id="score">0</span></div>
+            <div class="badge" id="timer">02:00</div>
+        </div>
+
+        <div class="question-text">
+            Perhatikan gambar tarian adat berikut. Seret jawaban yang paling tepat untuk menunjukkan makna budaya utama yang ditampilkan dalam tarian tersebut.
+        </div>
+
+        <div class="content-grid">
+            <div class="visual-side">
+                <div class="img-frame">
+                    <img src="images/tari-saman.jpg" alt="Tari Saman">
+                </div>
+                <div id="drop-zone" class="drop-zone">
+                    DROP JAWABAN DI SINI
+                </div>
+            </div>
+
+            <div class="options-side" id="options-container">
+                </div>
+        </div>
+
+    </div>
+
+    <div class="creators-box">
+        1. Arya Bilal Azzuri / 08 / XII RPL 3<br>
+        2. Fiha Aridhoi / 18 / XII RPL 3<br>
+        3. Muhammad Ayman Hammami / 26 / XII RPL 3
+    </div>
+
+    <script>
+        const quizData = {
+            correct: "Tarian yang menonjolkan nilai kekompakan, kerja sama, dan kebersamaan dalam kelompok masyarakat.",
+            options: [
+                "Tarian yang menonjolkan nilai kekompakan, kerja sama, dan kebersamaan dalam kelompok masyarakat.",
+                "Tarian yang menceritakan tentang siklus panen padi.",
+                "Tarian perang untuk mengobarkan semangat prajurit.",
+                "Ekspresi spiritual yang dilakukan secara individu.",
+                "Tarian yang menggunakan alat musik tiup sebagai pengiring utama."
+            ]
+        };
+
+        let timeLeft = 120;
+        let isGameOver = false;
+
+        // Render Opsi
+        const container = document.getElementById('options-container');
+        [...quizData.options].sort(() => Math.random() - 0.5).forEach((opt, i) => {
+            const div = document.createElement('div');
+            div.className = 'option-card';
+            div.innerText = opt;
+            div.draggable = true;
+            div.id = `opt-${i}`;
+            
+            div.addEventListener('dragstart', e => {
+                if(isGameOver) return;
+                e.dataTransfer.setData('text', e.target.id);
+                e.target.style.opacity = "0.4";
+            });
+
+            div.addEventListener('dragend', e => {
+                e.target.style.opacity = "1";
+            });
+
+            container.appendChild(div);
+        });
+
+
+        // Drag & Drop Logic
+        const dropZone = document.getElementById('drop-zone');
+        
+        dropZone.addEventListener('dragover', e => {
+            e.preventDefault();
+            if(!isGameOver) dropZone.classList.add('drag-over');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('drag-over');
+        });
+
+        dropZone.addEventListener('drop', e => {
+            e.preventDefault();
+            if(isGameOver) return;
+            
+            dropZone.classList.remove('drag-over');
+            const id = e.dataTransfer.getData('text');
+            const el = document.getElementById(id);
+            const choice = el.innerText;
+            
+            isGameOver = true;
+            
+            if(choice === quizData.correct) {
+                QuizCore.updateScore(10);
+                document.getElementById('score').innerText = "10";
+                document.body.style.backgroundColor = "var(--correct)";
+                
+                el.classList.add('correct-state');
+                dropZone.classList.add('correct-state');
+                dropZone.innerText = "BENAR!";
+                setTimeout(() => nextQuestion(), 2000);
+            } else {
+                el.classList.add('wrong-state');
+                dropZone.classList.add('wrong-state');
+                dropZone.innerText = "SALAH!";
+                document.body.style.backgroundColor = "var(--wrong)";
+                
+                // Highlight jawaban benar
+                document.querySelectorAll('.option-card').forEach(card => {
+                    if(card.innerText === quizData.correct) card.classList.add('highlight-correct');
+                });
+                setTimeout(() => nextQuestion(), 3000);
+            }
+        });
+
+        function nextQuestion() {
+            document.querySelector('.quiz-card').classList.add('page-exit');
+            setTimeout(() => {
+                window.location.href = 'soal2.html';
+            }, 800);
+        }
+
+        // Particle Background
+        const canvas = document.getElementById('particles');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        let particles = [];
+        for(let i=0; i<60; i++) {
+            particles.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                s: Math.random() * 2,
+                v: Math.random() * 0.5
+            });
+        }
+        function draw() {
+            ctx.clearRect(0,0,canvas.width,canvas.height);
+            ctx.fillStyle = "rgba(255,255,255,0.2)";
+            particles.forEach(p => {
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.s, 0, Math.PI*2);
+                ctx.fill();
+                p.y -= p.v;
+                if(p.y < 0) p.y = canvas.height;
+            });
+            requestAnimationFrame(draw);
+        }
+        draw();
+    </script>
+</body>
+</html>

@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Soal 9 - Connection Rope</title>
+    <style>
+        :root {
+            --bg: #000000;
+            --card: #ffffff;
+            --accent: #ffee00;
+            --correct: #00ff88;
+            --wrong: #ff0055;
+            --border: 5px solid #000000;
+        }
+
+        /* user-select: none ditambahkan agar teks tidak terblokir saat ditarik */
+        * { 
+            box-sizing: border-box; 
+            margin: 0; 
+            padding: 0; 
+            font-family: 'Arial Black', sans-serif; 
+            user-select: none; 
+            -webkit-user-select: none;
+        }
+
+        body {
+            background-color: var(--bg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        .quiz-container {
+            background: var(--card);
+            border: var(--border);
+            box-shadow: 15px 15px 0px var(--accent);
+            width: 95vw;
+            max-width: 900px;
+            padding: 30px;
+            position: relative;
+        }
+
+        .header-ui {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .badge {
+            border: 3px solid #000;
+            padding: 5px 15px;
+            background: #fff;
+        }
+
+        .instruction {
+            background: #000; color: #fff;
+            padding: 10px; text-align: center;
+            margin-bottom: 20px; font-size: 0.8rem;
+        }
+
+        .connection-arena {
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+            padding: 40px 0;
+        }
+
+        .column {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+            z-index: 10;
+        }
+
+        .item {
+            display: flex;
+            align-items: center;
+            background: #fff;
+            border: 3px solid #000;
+            padding: 12px 20px;
+            min-width: 220px;
+            position: relative;
+            justify-content: space-between;
+            cursor: default;
+        }
+
+        .dot {
+            width: 18px;
+            height: 18px;
+            background: #000;
+            border-radius: 50%;
+            cursor: crosshair;
+            position: absolute;
+            transition: 0.2s;
+            z-index: 20;
+        }
+
+        #left-col .dot { right: -11px; }
+        #right-col .dot { left: -11px; }
+
+        .dot:hover { transform: scale(1.4); background: var(--accent); }
+        .dot.connected { background: var(--accent); cursor: default; }
+
+        #connector-canvas {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        #submit-btn {
+            margin-top: 20px;
+            width: 100%;
+            padding: 15px;
+            background: #000;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            display: none;
+            font-family: 'Arial Black', sans-serif;
+        }
+
+        #submit-btn:hover {
+            background: var(--accent);
+            color: #000;
+        }
+
+        .creators-box {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            z-index: 100;
+            background: #fff;
+            border: 3px solid #000;
+            padding: 10px;
+            box-shadow: 5px 5px 0px #000;
+            font-family: 'Arial Black', sans-serif;
+            font-size: 10px;
+            line-height: 1.4;
+            text-transform: uppercase;
+        }
+    </style>
+    <script src="quiz-core.js"></script>
+</head>
+<body>
+
+    <div class="quiz-container">
+        <div class="header-ui">
+            <div class="badge">SKOR: <span id="score">0</span></div>
+            <div class="badge" id="timer">02:00</div>
+        </div>
+
+        <div class="instruction">
+            PASANGKAN SEMUA! Tarik garis dari titik ke titik tanpa memblokir teks.
+        </div>
+
+        <div class="connection-arena" id="arena">
+            <canvas id="connector-canvas"></canvas>
+            
+            <div class="column" id="left-col">
+                <div class="item" data-id="Hindu">Nyepi <div class="dot source" id="s-hindu"></div></div>
+                <div class="item" data-id="Buddha">Waisak <div class="dot source" id="s-buddha"></div></div>
+                <div class="item" data-id="Konghucu">Imlek <div class="dot source" id="s-konghucu"></div></div>
+                <div class="item" data-id="Islam">Idul Adha <div class="dot source" id="s-islam"></div></div>
+                <div class="item" data-id="Kristen">Natal <div class="dot source" id="s-kristen"></div></div>
+            </div>
+
+            <div class="column" id="right-col">
+                <div class="item"><div class="dot target" id="t-Islam"></div> Agama Islam</div>
+                <div class="item"><div class="dot target" id="t-Hindu"></div> Agama Hindu</div>
+                <div class="item"><div class="dot target" id="t-Buddha"></div> Agama Buddha</div>
+                <div class="item"><div class="dot target" id="t-Kristen"></div> Agama Kristen</div>
+                <div class="item"><div class="dot target" id="t-Konghucu"></div> Agama Konghucu</div>
+            </div>
+        </div>
+        <button id="submit-btn">VALIDASI JAWABAN</button>
+
+    </div>
+
+    <div class="creators-box">
+        1. Arya Bilal Azzuri / 08 / XII RPL 3<br>
+        2. Fiha Aridhoi / 18 / XII RPL 3<br>
+        3. Muhammad Ayman Hammami / 26 / XII RPL 3
+    </div>
+
+    <script>
+        let totalScore = (parseInt(localStorage.getItem('totalScore')) || 0);
+        document.getElementById('score').innerText = totalScore;
+
+        const canvas = document.getElementById('connector-canvas');
+        const ctx = canvas.getContext('2d');
+        const submitBtn = document.getElementById('submit-btn');
+        
+        let isDrawing = false;
+        let startDot = null;
+        let connections = []; 
+        let currentMousePos = { x: 0, y: 0 };
+        let isDone = false;
+
+        function resizeCanvas() {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+            drawAll();
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        document.querySelectorAll('.source').forEach(dot => {
+            dot.addEventListener('mousedown', (e) => {
+                e.preventDefault(); // Mencegah seleksi teks saat mulai menarik
+                if(isDone || dot.classList.contains('connected')) return;
+                isDrawing = true;
+                startDot = dot;
+            });
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            if (!isDrawing) return;
+            const rect = canvas.getBoundingClientRect();
+            currentMousePos.x = e.clientX - rect.left;
+            currentMousePos.y = e.clientY - rect.top;
+            drawAll();
+        });
+
+        window.addEventListener('mouseup', (e) => {
+            if (!isDrawing) return;
+            
+            // Mencari elemen dot target di bawah koordinat mouse
+            const target = document.elementFromPoint(e.clientX, e.clientY);
+            
+            if (target && target.classList.contains('target') && !target.classList.contains('connected')) {
+                const sourceId = startDot.parentNode.dataset.id;
+                const targetId = target.id.replace('t-', '');
+
+                connections.push({
+                    sourceId: sourceId,
+                    targetId: targetId,
+                    fromEl: startDot,
+                    toEl: target
+                });
+
+                startDot.classList.add('connected');
+                target.classList.add('connected');
+
+                if (connections.length === 5) {
+                    submitBtn.style.display = 'block';
+                }
+            }
+            
+            isDrawing = false;
+            startDot = null;
+            drawAll();
+        });
+
+        submitBtn.onclick = () => {
+            isDone = true;
+            submitBtn.style.display = 'none';
+            let allCorrect = true;
+
+            connections.forEach(conn => {
+                if (conn.sourceId !== conn.targetId) {
+                    allCorrect = false;
+                }
+            });
+
+            if (allCorrect) {
+                QuizCore.updateScore(10);
+                totalScore = (parseInt(localStorage.getItem('totalScore')) || 0);
+                document.getElementById('score').innerText = totalScore;
+                document.body.style.backgroundColor = "var(--correct)";
+                drawFinalLines('#00ff88');
+            } else {
+                document.body.style.backgroundColor = "var(--wrong)";
+                drawFinalLines('#ff0055');
+            }
+            
+            setTimeout(() => window.location.href = 'soal7.html', 2000);
+        };
+
+        function drawAll() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.lineWidth = 4;
+            ctx.lineCap = 'round';
+            ctx.strokeStyle = '#000';
+
+            connections.forEach(conn => {
+                drawLink(conn.fromEl, conn.toEl);
+            });
+
+            if (isDrawing && startDot) {
+                const rect = canvas.getBoundingClientRect();
+                const dotRect = startDot.getBoundingClientRect();
+                ctx.beginPath();
+                ctx.moveTo(dotRect.left + 9 - rect.left, dotRect.top + 9 - rect.top);
+                ctx.lineTo(currentMousePos.x, currentMousePos.y);
+                ctx.stroke();
+            }
+        }
+
+        function drawLink(el1, el2) {
+            const rect = canvas.getBoundingClientRect();
+            const r1 = el1.getBoundingClientRect();
+            const r2 = el2.getBoundingClientRect();
+            ctx.beginPath();
+            ctx.moveTo(r1.left + 9 - rect.left, r1.top + 9 - rect.top);
+            ctx.lineTo(r2.left + 9 - rect.left, r2.top + 9 - rect.top);
+            ctx.stroke();
+        }
+
+        function drawFinalLines(color) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.lineWidth = 6;
+            ctx.strokeStyle = color;
+            connections.forEach(conn => drawLink(conn.fromEl, conn.toEl));
+        }
+
+    </script>
+</body>
+</html>
