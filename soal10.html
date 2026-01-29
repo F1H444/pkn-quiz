@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Soal 5 - Senjata Tradisional</title>
+    <title>Soal 10 - Senjata Tradisional</title>
     <style>
         :root {
             --bg: #000000;
@@ -19,7 +19,6 @@
             margin: 0; 
             padding: 0; 
             font-family: 'Arial Black', sans-serif;
-            user-select: none; /* Mencegah teks terblokir saat menarik tali */
         }
 
         body {
@@ -39,8 +38,8 @@
             border: var(--border);
             box-shadow: 15px 15px 0px var(--accent);
             width: 95vw;
-            max-width: 900px;
-            padding: 20px;
+            max-width: 1000px;
+            padding: 30px;
             position: relative;
             margin: auto;
         }
@@ -48,7 +47,7 @@
         .header-ui {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
 
         .badge {
@@ -59,102 +58,119 @@
 
         .instruction {
             background: #000; color: #fff;
-            padding: 10px; text-align: center;
-            margin-bottom: 15px; font-size: 0.8rem;
+            padding: 15px; text-align: center;
+            margin-bottom: 25px; font-size: 1rem;
         }
 
-        .connection-arena {
-            display: flex;
-            justify-content: space-between;
-            position: relative;
-            padding: 20px 0;
-            gap: 20px;
+        .match-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 15px;
+            margin-bottom: 40px;
         }
-
+        
         @media (max-width: 850px) {
-            .connection-arena { 
-                flex-direction: column; 
-                align-items: center;
-                gap: 40px;
-            }
+            .match-grid { grid-template-columns: repeat(2, 1fr); }
             body { align-items: flex-start; }
-            .column { width: 100%; align-items: stretch; }
-            .item-text, .item-img { width: 100%; min-width: unset; }
         }
 
-        .column {
+        /* Drop Zones with Labels */
+        .target-box {
             display: flex;
             flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .drop-zone {
+            width: 100%;
+            height: 120px;
+            border: 3px dashed #000;
+            background: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: 0.3s;
+            position: relative;
+        }
+
+        .drop-zone.drag-over {
+            background: #e0e0e0;
+            border-style: solid;
+        }
+
+        .zone-label {
+            background: #000;
+            color: #fff;
+            padding: 5px 15px;
+            font-size: 0.8rem;
+            text-align: center;
+            width: 100%;
+        }
+
+        /* Draggable Images */
+        .source-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
             gap: 15px;
+            min-height: 100px;
+            padding: 20px;
+            border: 3px solid #eee;
+            background: #fff;
+        }
+
+        .draggable-img {
+            width: 100px;
+            height: 80px;
+            border: 3px solid #000;
+            cursor: grab;
+            position: relative;
+            background: #fff;
+            padding: 5px;
+            transition: 0.2s;
+        }
+        
+        .draggable-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            pointer-events: none;
+        }
+
+        .draggable-img:hover {
+            transform: scale(1.1);
+            box-shadow: 5px 5px 0px var(--accent);
             z-index: 10;
         }
 
-        /* Kotak Gambar di Kiri */
-        .item-img {
-            width: 120px;
-            height: 90px;
-            background: #fff;
-            border: 3px solid #000;
-            position: relative;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 5px;
+        .draggable-img.dragging {
+            opacity: 0.5;
         }
 
-        .item-img img {
-            max-width: 100%;
-            max-height: 100%;
-            pointer-events: none;
-        }
-
-        /* Kotak Nama di Kanan */
-        .item-text {
-            height: 90px;
-            min-width: 180px;
-            background: #fff;
-            border: 3px solid #000;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            position: relative;
-            font-size: 0.9rem;
-        }
-
-        /* Titik/Dot */
-        .dot {
-            width: 18px;
-            height: 18px;
+        #check-btn {
+            margin-top: 30px;
+            width: 100%;
+            padding: 15px;
+            font-size: 1.2rem;
             background: #000;
-            border-radius: 50%;
-            cursor: crosshair;
-            position: absolute;
-            z-index: 20;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            font-family: 'Arial Black', sans-serif;
+            text-transform: uppercase;
+            box-shadow: 8px 8px 0px var(--accent);
         }
 
-        #left-col .dot { right: -25px; top: 50%; transform: translateY(-50%); }
-        #right-col .dot { left: -25px; top: 50%; transform: translateY(-50%); }
-
-        .dot:hover { transform: translateY(-50%) scale(1.3); background: var(--accent); }
-        .dot.connected { background: var(--accent); }
-
-        #connector-canvas {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            pointer-events: none;
-            z-index: 5;
-        }
-
-        #validate-btn:hover {
-            background: var(--accent);
-            color: #000;
+        #check-btn:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 12px 12px 0px var(--accent);
         }
 
         .creators-box {
             position: fixed;
             bottom: 20px;
-            left: 20px;
+            right: 20px;
             z-index: 100;
             background: #fff;
             border: 3px solid #000;
@@ -176,43 +192,52 @@
             <div class="badge" id="timer">02:00</div>
         </div>
 
-        <div class="instruction">TARIK TALI DARI TITIK GAMBAR KE TITIK NAMA SENJATA!</div>
+        <div class="instruction">
+            SERET GAMBAR SENJATA KE DALAM KOTAK NAMA YANG SESUAI!
+        </div>
 
-        <div class="connection-arena">
-            <canvas id="connector-canvas"></canvas>
-            
-            <div class="column" id="left-col">
-                <div class="item-img" data-match="keris">
-                    <img src="images/keris.jpg" alt="Keris">
-                    <div class="dot source"></div>
-                </div>
-                <div class="item-img" data-match="mandau">
-                    <img src="images/mandau.jpg" alt="Mandau">
-                    <div class="dot source"></div>
-                </div>
-                <div class="item-img" data-match="rencong">
-                    <img src="images/rencong.jpg" alt="Rencong">
-                    <div class="dot source"></div>
-                </div>
-                <div class="item-img" data-match="kujang">
-                    <img src="images/kujang.jpg" alt="Kujang">
-                    <div class="dot source"></div>
-                </div>
-                <div class="item-img" data-match="celurit">
-                    <img src="images/celurit.jpg" alt="Celurit">
-                    <div class="dot source"></div>
-                </div>
+        <div class="match-grid">
+            <div class="target-box">
+                <div class="drop-zone" data-target="keris"></div>
+                <div class="zone-label">KERIS</div>
             </div>
-
-            <div class="column" id="right-col">
-                <div class="item-text"> MANDAU <div class="dot target" id="mandau"></div></div>
-                <div class="item-text"> RENCONG <div class="dot target" id="rencong"></div></div>
-                <div class="item-text"> KERIS <div class="dot target" id="keris"></div></div>
-                <div class="item-text"> CELURIT <div class="dot target" id="celurit"></div></div>
-                <div class="item-text"> KUJANG <div class="dot target" id="kujang"></div></div>
+            <div class="target-box">
+                <div class="drop-zone" data-target="mandau"></div>
+                <div class="zone-label">MANDAU</div>
+            </div>
+            <div class="target-box">
+                <div class="drop-zone" data-target="rencong"></div>
+                <div class="zone-label">RENCONG</div>
+            </div>
+            <div class="target-box">
+                <div class="drop-zone" data-target="kujang"></div>
+                <div class="zone-label">KUJANG</div>
+            </div>
+            <div class="target-box">
+                <div class="drop-zone" data-target="celurit"></div>
+                <div class="zone-label">CELURIT</div>
             </div>
         </div>
-        <button id="validate-btn">PERIKSA JAWABAN</button>
+
+        <div class="source-grid" id="source-list">
+            <div class="draggable-img" draggable="true" data-type="keris">
+                <img src="images/keris.jpg" alt="Keris">
+            </div>
+            <div class="draggable-img" draggable="true" data-type="mandau">
+                <img src="images/mandau.jpg" alt="Mandau">
+            </div>
+            <div class="draggable-img" draggable="true" data-type="rencong">
+                <img src="images/rencong.jpg" alt="Rencong">
+            </div>
+            <div class="draggable-img" draggable="true" data-type="kujang">
+                <img src="images/kujang.jpg" alt="Kujang">
+            </div>
+            <div class="draggable-img" draggable="true" data-type="celurit">
+                <img src="images/celurit.jpg" alt="Celurit">
+            </div>
+        </div>
+
+        <button id="check-btn" onclick="checkAnswers()">CEK JAWABAN</button>
 
     </div>
 
@@ -223,117 +248,89 @@
     </div>
 
     <script>
-        let totalScore = (parseInt(localStorage.getItem('totalScore')) || 0);
-        document.getElementById('score').innerText = totalScore;
-
-        const canvas = document.getElementById('connector-canvas');
-        const ctx = canvas.getContext('2d');
-        const validateBtn = document.getElementById('validate-btn');
+        document.getElementById('score').innerText = localStorage.getItem('totalScore') || 0;
         
-        let isDrawing = false;
-        let startDot = null;
-        let connections = [];
-        let currentMousePos = { x: 0, y: 0 };
-        let isDone = false;
-
-        function resizeCanvas() {
-            canvas.width = canvas.offsetWidth;
-            canvas.height = canvas.offsetHeight;
-            drawAll();
+        // Randomize source
+        const sourceList = document.getElementById('source-list');
+        for (let i = sourceList.children.length; i >= 0; i--) {
+            sourceList.appendChild(sourceList.children[Math.random() * i | 0]);
         }
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
 
-        document.querySelectorAll('.source').forEach(dot => {
-            dot.addEventListener('mousedown', (e) => {
-                if(isDone || dot.classList.contains('connected')) return;
-                isDrawing = true;
-                startDot = dot;
+        const draggables = document.querySelectorAll('.draggable-img');
+        const dropZones = document.querySelectorAll('.drop-zone');
+
+        draggables.forEach(item => {
+            item.addEventListener('dragstart', () => {
+                item.classList.add('dragging');
+            });
+            item.addEventListener('dragend', () => {
+                item.classList.remove('dragging');
             });
         });
 
-        window.addEventListener('mousemove', (e) => {
-            if (!isDrawing) return;
-            const rect = canvas.getBoundingClientRect();
-            currentMousePos.x = e.clientX - rect.left;
-            currentMousePos.y = e.clientY - rect.top;
-            drawAll();
+        dropZones.forEach(zone => {
+            zone.addEventListener('dragover', e => {
+                e.preventDefault();
+                zone.classList.add('drag-over');
+            });
+
+            zone.addEventListener('dragleave', () => {
+                zone.classList.remove('drag-over');
+            });
+
+            zone.addEventListener('drop', e => {
+                e.preventDefault();
+                zone.classList.remove('drag-over');
+                const dragged = document.querySelector('.dragging');
+                if(!dragged) return;
+
+                // Handle if something is already there
+                const existing = zone.querySelector('.draggable-img');
+                if(existing) {
+                    sourceList.appendChild(existing);
+                }
+
+                zone.appendChild(dragged);
+            });
         });
 
-        window.addEventListener('mouseup', (e) => {
-            if (!isDrawing) return;
-            const target = document.elementFromPoint(e.clientX, e.clientY);
-            
-            if (target && target.classList.contains('target') && !target.classList.contains('connected')) {
-                connections.push({
-                    fromEl: startDot,
-                    toEl: target,
-                    sourceId: startDot.parentNode.dataset.match,
-                    targetId: target.id
-                });
-                startDot.classList.add('connected');
-                target.classList.add('connected');
-
-                if (connections.length === 5) validateBtn.style.display = 'block';
-            }
-            isDrawing = false;
-            startDot = null;
-            drawAll();
-        });
-
-        validateBtn.onclick = () => {
-            isDone = true;
-            validateBtn.style.display = 'none';
+        function checkAnswers() {
             let correctCount = 0;
+            let total = 0;
+            let allPlaced = true;
 
-            connections.forEach(conn => {
-                if(conn.sourceId === conn.targetId) correctCount++;
+            dropZones.forEach(zone => {
+                const item = zone.querySelector('.draggable-img');
+                if(item) {
+                    total++;
+                    if(item.dataset.type === zone.dataset.target) {
+                        correctCount++;
+                        item.style.borderColor = "var(--correct)";
+                        item.style.boxShadow = "5px 5px 0px var(--correct)";
+                    } else {
+                        item.style.borderColor = "var(--wrong)";
+                        item.style.boxShadow = "5px 5px 0px var(--wrong)";
+                    }
+                } else {
+                    allPlaced = false;
+                }
             });
+
+            if(!allPlaced && total < 5) {
+                alert("Harap pasangkan semua gambar sebelum memeriksa!");
+                return;
+            }
 
             if(correctCount === 5) {
                 QuizCore.updateScore(10);
-                totalScore = (parseInt(localStorage.getItem('totalScore')) || 0);
+                document.getElementById('score').innerText = localStorage.getItem('totalScore');
                 document.body.style.backgroundColor = "var(--correct)";
-                drawFinal('#00ff88');
+                setTimeout(() => window.location.href = 'selesai.html', 1500);
             } else {
                 document.body.style.backgroundColor = "var(--wrong)";
-                drawFinal('#ff0055');
-            }
-            setTimeout(() => window.location.href = 'selesai.html', 2000);
-        };
-
-        function drawAll() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.lineWidth = 4;
-            ctx.strokeStyle = '#000';
-            connections.forEach(c => drawLink(c.fromEl, c.toEl));
-            if (isDrawing && startDot) {
-                const rect = canvas.getBoundingClientRect();
-                const dRect = startDot.getBoundingClientRect();
-                ctx.beginPath();
-                ctx.moveTo(dRect.left + 9 - rect.left, dRect.top + 9 - rect.top);
-                ctx.lineTo(currentMousePos.x, currentMousePos.y);
-                ctx.stroke();
+                setTimeout(() => window.location.href = 'selesai.html', 2000); // Or try again? Logic previously was fail forward
             }
         }
-
-        function drawLink(el1, el2) {
-            const rect = canvas.getBoundingClientRect();
-            const r1 = el1.getBoundingClientRect();
-            const r2 = el2.getBoundingClientRect();
-            ctx.beginPath();
-            ctx.moveTo(r1.left + 9 - rect.left, r1.top + 9 - rect.top);
-            ctx.lineTo(r2.left + 9 - rect.left, r2.top + 9 - rect.top);
-            ctx.stroke();
-        }
-
-        function drawFinal(color) {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.strokeStyle = color;
-            ctx.lineWidth = 6;
-            connections.forEach(c => drawLink(c.fromEl, c.toEl));
-        }
-
     </script>
 </body>
 </html>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Soal 9 - Connection Rope</title>
+    <title>Soal 6 - Hari Raya & Agama</title>
     <style>
         :root {
             --bg: #000000;
@@ -14,14 +14,11 @@
             --border: 5px solid #000000;
         }
 
-        /* user-select: none ditambahkan agar teks tidak terblokir saat ditarik */
         * { 
             box-sizing: border-box; 
             margin: 0; 
             padding: 0; 
             font-family: 'Arial Black', sans-serif; 
-            user-select: none; 
-            -webkit-user-select: none;
         }
 
         body {
@@ -40,7 +37,7 @@
             border: var(--border);
             box-shadow: 15px 15px 0px var(--accent);
             width: 95vw;
-            max-width: 900px;
+            max-width: 1000px;
             padding: 30px;
             position: relative;
             margin: auto;
@@ -60,94 +57,117 @@
 
         .instruction {
             background: #000; color: #fff;
-            padding: 10px; text-align: center;
-            margin-bottom: 20px; font-size: 0.8rem;
+            padding: 15px; text-align: center;
+            margin-bottom: 25px; font-size: 1rem;
         }
 
-        .connection-arena {
-            display: flex;
-            justify-content: space-between;
-            position: relative;
-            padding: 40px 0;
-            gap: 20px;
+        .match-area {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
         }
 
         @media (max-width: 850px) {
-            .connection-arena { 
-                flex-direction: column; 
-                align-items: center;
-                gap: 40px;
-            }
+            .match-area { grid-template-columns: 1fr; }
             body { align-items: flex-start; }
-            .column { width: 100%; align-items: stretch; }
-            .item { width: 100%; min-width: unset; }
+            .item, .drop-zone { width: 100%; margin-bottom: 10px; }
         }
 
-        .column {
+        /* Draggable Items */
+        .source-container {
             display: flex;
             flex-direction: column;
-            gap: 25px;
-            z-index: 10;
+            gap: 15px;
         }
 
-        .item {
-            display: flex;
-            align-items: center;
+        .draggable-item {
             background: #fff;
             border: 3px solid #000;
-            padding: 12px 20px;
-            min-width: 220px;
-            position: relative;
-            justify-content: space-between;
-            cursor: default;
-        }
-
-        .dot {
-            width: 18px;
-            height: 18px;
-            background: #000;
-            border-radius: 50%;
-            cursor: crosshair;
-            position: absolute;
+            padding: 15px;
+            cursor: grab;
+            text-align: center;
+            font-weight: 900;
+            box-shadow: 5px 5px 0px #ccc;
             transition: 0.2s;
-            z-index: 20;
         }
 
-        #left-col .dot { right: -11px; }
-        #right-col .dot { left: -11px; }
+        .draggable-item:hover {
+            transform: translate(-3px, -3px);
+            box-shadow: 8px 8px 0px var(--accent);
+            background: var(--accent);
+        }
 
-        .dot:hover { transform: scale(1.4); background: var(--accent); }
-        .dot.connected { background: var(--accent); cursor: default; }
+        .draggable-item.dragging {
+            opacity: 0.5;
+        }
 
-        #connector-canvas {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
+        /* Drop Zones */
+        .target-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .drop-zone {
+            background: #f4f4f4;
+            border: 3px dashed #000;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            min-height: 70px;
+            transition: 0.3s;
+        }
+
+        .drop-zone.drag-over {
+            background: #e0e0e0;
+            border-style: solid;
+        }
+
+        .drop-zone span {
             pointer-events: none;
-            z-index: 5;
         }
 
-        #submit-btn {
-            margin-top: 20px;
+        .drop-zone .zone-label {
+            font-weight: 900;
+            text-decoration: underline;
+        }
+
+        .placed-item {
+            background: #000;
+            color: #fff;
+            padding: 5px 10px;
+            font-size: 0.8rem;
+            transform: rotate(-2deg);
+            border: 2px solid #fff;
+        }
+
+        .correct { background: var(--correct); border-color: var(--correct); }
+        .wrong { background: var(--wrong); border-color: var(--wrong); }
+
+        #check-btn {
+            margin-top: 30px;
             width: 100%;
             padding: 15px;
+            font-size: 1.2rem;
             background: #000;
             color: #fff;
             border: none;
             cursor: pointer;
-            display: none;
             font-family: 'Arial Black', sans-serif;
+            text-transform: uppercase;
+            box-shadow: 8px 8px 0px var(--accent);
         }
 
-        #submit-btn:hover {
-            background: var(--accent);
-            color: #000;
+        #check-btn:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 12px 12px 0px var(--accent);
         }
 
         .creators-box {
             position: fixed;
             bottom: 20px;
-            left: 20px;
+            right: 20px;
             z-index: 100;
             background: #fff;
             border: 3px solid #000;
@@ -170,30 +190,40 @@
         </div>
 
         <div class="instruction">
-            PASANGKAN SEMUA! Tarik garis dari titik ke titik tanpa memblokir teks.
+            SERET NAMA HARI RAYA KE DALAM KOTAK AGAMA YANG SESUAI!
         </div>
 
-        <div class="connection-arena" id="arena">
-            <canvas id="connector-canvas"></canvas>
-            
-            <div class="column" id="left-col">
-                <div class="item" data-id="Hindu">Nyepi <div class="dot source" id="s-hindu"></div></div>
-                <div class="item" data-id="Buddha">Waisak <div class="dot source" id="s-buddha"></div></div>
-                <div class="item" data-id="Konghucu">Imlek <div class="dot source" id="s-konghucu"></div></div>
-                <div class="item" data-id="Islam">Idul Adha <div class="dot source" id="s-islam"></div></div>
-                <div class="item" data-id="Kristen">Natal <div class="dot source" id="s-kristen"></div></div>
+        <div class="match-area">
+            <!-- Left: Draggables -->
+            <div class="source-container" id="source-list">
+                <div class="draggable-item" draggable="true" id="nyepi" data-val="Hindu">NYEPI</div>
+                <div class="draggable-item" draggable="true" id="waisak" data-val="Buddha">WAISAK</div>
+                <div class="draggable-item" draggable="true" id="imlek" data-val="Konghucu">IMLEK</div>
+                <div class="draggable-item" draggable="true" id="iduladha" data-val="Islam">IDUL ADHA</div>
+                <div class="draggable-item" draggable="true" id="natal" data-val="Kristen">NATAL</div>
             </div>
 
-            <div class="column" id="right-col">
-                <div class="item"><div class="dot target" id="t-Islam"></div> Agama Islam</div>
-                <div class="item"><div class="dot target" id="t-Hindu"></div> Agama Hindu</div>
-                <div class="item"><div class="dot target" id="t-Buddha"></div> Agama Buddha</div>
-                <div class="item"><div class="dot target" id="t-Kristen"></div> Agama Kristen</div>
-                <div class="item"><div class="dot target" id="t-Konghucu"></div> Agama Konghucu</div>
+            <!-- Right: Drop Targets -->
+            <div class="target-container">
+                <div class="drop-zone" data-target="Islam">
+                    <span class="zone-label">ISLAM</span>
+                </div>
+                <div class="drop-zone" data-target="Kristen">
+                    <span class="zone-label">KRISTEN</span>
+                </div>
+                <div class="drop-zone" data-target="Hindu">
+                    <span class="zone-label">HINDU</span>
+                </div>
+                <div class="drop-zone" data-target="Buddha">
+                    <span class="zone-label">BUDDHA</span>
+                </div>
+                <div class="drop-zone" data-target="Konghucu">
+                    <span class="zone-label">KONGHUCU</span>
+                </div>
             </div>
         </div>
-        <button id="submit-btn">VALIDASI JAWABAN</button>
 
+        <button id="check-btn" onclick="checkAnswers()">CEK JAWABAN</button>
     </div>
 
     <div class="creators-box">
@@ -203,136 +233,114 @@
     </div>
 
     <script>
-        let totalScore = (parseInt(localStorage.getItem('totalScore')) || 0);
-        document.getElementById('score').innerText = totalScore;
-
-        const canvas = document.getElementById('connector-canvas');
-        const ctx = canvas.getContext('2d');
-        const submitBtn = document.getElementById('submit-btn');
+        document.getElementById('score').innerText = localStorage.getItem('totalScore') || 0;
         
-        let isDrawing = false;
-        let startDot = null;
-        let connections = []; 
-        let currentMousePos = { x: 0, y: 0 };
-        let isDone = false;
-
-        function resizeCanvas() {
-            canvas.width = canvas.offsetWidth;
-            canvas.height = canvas.offsetHeight;
-            drawAll();
+        // Randomize source list
+        const sourceList = document.getElementById('source-list');
+        for (let i = sourceList.children.length; i >= 0; i--) {
+            sourceList.appendChild(sourceList.children[Math.random() * i | 0]);
         }
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
 
-        document.querySelectorAll('.source').forEach(dot => {
-            dot.addEventListener('mousedown', (e) => {
-                e.preventDefault(); // Mencegah seleksi teks saat mulai menarik
-                if(isDone || dot.classList.contains('connected')) return;
-                isDrawing = true;
-                startDot = dot;
+        const draggables = document.querySelectorAll('.draggable-item');
+        const dropZones = document.querySelectorAll('.drop-zone');
+
+        draggables.forEach(draggable => {
+            draggable.addEventListener('dragstart', () => {
+                draggable.classList.add('dragging');
+            });
+            draggable.addEventListener('dragend', () => {
+                draggable.classList.remove('dragging');
             });
         });
 
-        window.addEventListener('mousemove', (e) => {
-            if (!isDrawing) return;
-            const rect = canvas.getBoundingClientRect();
-            currentMousePos.x = e.clientX - rect.left;
-            currentMousePos.y = e.clientY - rect.top;
-            drawAll();
+        dropZones.forEach(zone => {
+            zone.addEventListener('dragover', e => {
+                e.preventDefault();
+                zone.classList.add('drag-over');
+            });
+
+            zone.addEventListener('dragleave', () => {
+                zone.classList.remove('drag-over');
+            });
+
+            zone.addEventListener('drop', e => {
+                e.preventDefault();
+                zone.classList.remove('drag-over');
+                const dragged = document.querySelector('.dragging');
+                if(!dragged) return;
+
+                // Check if zone already has an item? Replace or Reject?
+                // Let's allow strictly one item per zone for simplicity in this logic
+                const existing = zone.querySelector('.placed-item');
+                if(existing) {
+                    // Return existing to source list or swap?
+                    // Simple: Remove existing visual text, put it back to source list logic?
+                    // Easiest: Just append new div, remove dragged from source. 
+                    // If multiple, user can drag out?
+                    // Let's keep it simple: Append to zone. If zone full, maybe ignore?
+                    // Given the design, we can just allow appending.
+                }
+
+                // Move visual
+                // Instead of moving the card, let's create a "chip" inside the zone
+                // and hide the source card.
+                
+                // Clear zone first to enforce 1-to-1
+                const currentChip = zone.querySelector('.placed-item');
+                if(currentChip) {
+                   // Calculate which item this chip represented and show it back in source list?
+                   // A bit complex. Let's make it simpler:
+                   // Just append the draggable element itself into the zone?
+                   // Yes.
+                }
+
+                // If zone has a draggable-item, move it back to source-list
+                const occupied = zone.querySelector('.draggable-item');
+                if(occupied) {
+                   sourceList.appendChild(occupied);
+                }
+
+                zone.appendChild(dragged);
+            });
         });
 
-        window.addEventListener('mouseup', (e) => {
-            if (!isDrawing) return;
-            
-            // Mencari elemen dot target di bawah koordinat mouse
-            const target = document.elementFromPoint(e.clientX, e.clientY);
-            
-            if (target && target.classList.contains('target') && !target.classList.contains('connected')) {
-                const sourceId = startDot.parentNode.dataset.id;
-                const targetId = target.id.replace('t-', '');
+        function checkAnswers() {
+            let correctCount = 0;
+            let total = 0;
+            let allPlaced = true;
 
-                connections.push({
-                    sourceId: sourceId,
-                    targetId: targetId,
-                    fromEl: startDot,
-                    toEl: target
-                });
-
-                startDot.classList.add('connected');
-                target.classList.add('connected');
-
-                if (connections.length === 5) {
-                    submitBtn.style.display = 'block';
+            dropZones.forEach(zone => {
+                const item = zone.querySelector('.draggable-item');
+                if(item) {
+                    total++;
+                    if(item.dataset.val === zone.dataset.target) {
+                        correctCount++;
+                        item.style.backgroundColor = "var(--correct)";
+                        item.style.color = "#000";
+                    } else {
+                        item.style.backgroundColor = "var(--wrong)";
+                        item.style.color = "#fff";
+                    }
+                } else {
+                    allPlaced = false;
                 }
+            });
+
+            if(!allPlaced && total < 5) {
+                alert("Harap pasangkan semua item sebelum memeriksa!");
+                return;
             }
-            
-            isDrawing = false;
-            startDot = null;
-            drawAll();
-        });
 
-        submitBtn.onclick = () => {
-            isDone = true;
-            submitBtn.style.display = 'none';
-            let allCorrect = true;
-
-            connections.forEach(conn => {
-                if (conn.sourceId !== conn.targetId) {
-                    allCorrect = false;
-                }
-            });
-
-            if (allCorrect) {
+            if(correctCount === 5) {
                 QuizCore.updateScore(10);
-                totalScore = (parseInt(localStorage.getItem('totalScore')) || 0);
-                document.getElementById('score').innerText = totalScore;
+                document.getElementById('score').innerText = localStorage.getItem('totalScore');
                 document.body.style.backgroundColor = "var(--correct)";
-                drawFinalLines('#00ff88');
+                setTimeout(() => window.location.href = 'soal7.html', 1500);
             } else {
                 document.body.style.backgroundColor = "var(--wrong)";
-                drawFinalLines('#ff0055');
-            }
-            
-            setTimeout(() => window.location.href = 'soal7.html', 2000);
-        };
-
-        function drawAll() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.lineWidth = 4;
-            ctx.lineCap = 'round';
-            ctx.strokeStyle = '#000';
-
-            connections.forEach(conn => {
-                drawLink(conn.fromEl, conn.toEl);
-            });
-
-            if (isDrawing && startDot) {
-                const rect = canvas.getBoundingClientRect();
-                const dotRect = startDot.getBoundingClientRect();
-                ctx.beginPath();
-                ctx.moveTo(dotRect.left + 9 - rect.left, dotRect.top + 9 - rect.top);
-                ctx.lineTo(currentMousePos.x, currentMousePos.y);
-                ctx.stroke();
+                setTimeout(() => window.location.href = 'soal7.html', 2000); // Fail proceed
             }
         }
-
-        function drawLink(el1, el2) {
-            const rect = canvas.getBoundingClientRect();
-            const r1 = el1.getBoundingClientRect();
-            const r2 = el2.getBoundingClientRect();
-            ctx.beginPath();
-            ctx.moveTo(r1.left + 9 - rect.left, r1.top + 9 - rect.top);
-            ctx.lineTo(r2.left + 9 - rect.left, r2.top + 9 - rect.top);
-            ctx.stroke();
-        }
-
-        function drawFinalLines(color) {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.lineWidth = 6;
-            ctx.strokeStyle = color;
-            connections.forEach(conn => drawLink(conn.fromEl, conn.toEl));
-        }
-
     </script>
 </body>
 </html>

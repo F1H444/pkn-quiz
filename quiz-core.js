@@ -108,7 +108,7 @@ const QuizCore = {
             <div id="quiz-profile-badge" style="
                 position: fixed;
                 top: 20px;
-                left: 20px;
+                right: 20px;
                 background: #fff;
                 border: 4px solid #000;
                 box-shadow: 6px 6px 0px #000;
@@ -121,7 +121,7 @@ const QuizCore = {
                 animation: slideIn 0.5s cubic-bezier(0.23, 1, 0.32, 1);
             ">
                 <style>
-                    @keyframes slideIn { from { transform: translateX(-120%); } to { transform: translateX(0); } }
+                    @keyframes slideIn { from { transform: translateX(120%); } to { transform: translateX(0); } }
                 </style>
                 <div style="
                     width: 35px;
@@ -157,8 +157,7 @@ const QuizCore = {
             <div style="
                 position: fixed;
                 top: 20px;
-                right: 50%;
-                transform: translateX(50%);
+                left: 20px;
                 background: #000;
                 color: #fff;
                 border: 4px solid #000;

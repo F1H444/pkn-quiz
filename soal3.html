@@ -8,7 +8,7 @@
         :root {
             --bg: #000000;
             --card: #ffffff;
-            --accent: #ff00ea; /* Pink Neon Brutalist */
+            --accent: #ff00ea;
             --correct: #00ff88;
             --wrong: #ff0055;
             --text: #000000;
@@ -32,17 +32,13 @@
             padding: 20px;
             overflow-y: auto;
             overflow-x: hidden;
-            touch-action: none;
-            user-select: none;
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
         }
 
         #particles {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
             z-index: -1;
+            pointer-events: none;
         }
 
         .quiz-card {
@@ -78,118 +74,92 @@
 
         .instruction {
             background: #f0f0f0;
-            padding: 10px;
+            padding: 15px;
             border-left: 5px solid var(--accent);
-            margin-bottom: 20px;
-            font-size: 0.9rem;
+            margin-bottom: 25px;
+            font-size: 1rem;
+            line-height: 1.4;
         }
 
-        .game-area {
+        .content-grid {
             display: grid;
-            grid-template-columns: 1.2fr 0.8fr;
-            gap: 60px;
-            position: relative;
-            min-height: 400px;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            align-items: start;
         }
 
         @media (max-width: 850px) {
-            .game-area { 
-                grid-template-columns: 1fr;
-                gap: 40px; 
-            }
-            .image-container { order: -1; }
+            .content-grid { grid-template-columns: 1fr; }
             body { align-items: flex-start; }
-            .quiz-card { padding: 20px; }
+            .quiz-card { padding: 25px; }
         }
 
-        #connection-canvas {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            pointer-events: none;
-            z-index: 5;
-        }
-
-        .node-column {
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            gap: 15px;
-            z-index: 10;
-        }
-
-        .option-node {
-            background: #fff;
-            border: 3px solid #000;
-            padding: 12px;
-            font-size: 0.8rem;
-            position: relative;
-            box-shadow: 4px 4px 0px #000;
-            min-height: 80px;
-            display: flex;
-            align-items: center;
-        }
-
-        .image-container {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 10;
-        }
-
-        .image-target {
+        .img-frame {
             border: var(--border);
             padding: 10px;
             background: #fff;
-            position: relative;
-            width: 100%;
-            max-width: 250px;
+            margin-bottom: 20px;
+            text-align: center;
         }
 
-        .image-target img {
+        .img-frame img {
             width: 100%;
+            max-width: 300px;
             display: block;
+            margin: auto;
             pointer-events: none;
         }
 
-        /* Anchor Points */
-        .anchor {
-            width: 20px;
-            height: 20px;
-            background: #000;
-            border: 3px solid var(--accent);
-            border-radius: 50%;
-            position: absolute;
-            z-index: 20;
-            cursor: crosshair;
+        .drop-zone {
+            height: 100px;
+            border: 5px dashed #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 15px;
+            font-weight: 800;
+            background: #f8f8f8;
+            transition: 0.3s;
+            font-size: 0.9rem;
         }
 
-        /* Titik nempel di kanan kotak deskripsi */
-        .anchor-right {
-            right: -10px;
-            top: 50%;
-            transform: translateY(-50%);
+        .drop-zone.drag-over {
+            background: var(--accent);
+            border-style: solid;
         }
 
-        /* Titik nempel di kiri kotak gambar */
-        .anchor-left {
-            left: -10px;
-            top: 50%;
-            transform: translateY(-50%);
+        .option-card {
+            background: #fff;
+            border: 3px solid #000;
+            padding: 15px 20px;
+            margin-bottom: 12px;
+            cursor: grab;
+            font-size: 0.9rem;
+            font-weight: 700;
+            box-shadow: 4px 4px 0px #000;
+            transition: 0.2s;
         }
 
-        .is-wrong { animation: shake 0.5s; border-color: var(--wrong); }
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            75% { transform: translateX(5px); }
+        .option-card:hover {
+            transform: translate(-3px, -3px);
+            box-shadow: 8px 8px 0px var(--accent);
         }
+
+        .correct-state { background: var(--correct) !important; color: #000 !important; }
+        .wrong-state { background: var(--wrong) !important; color: #fff !important; }
+        
+        .highlight-correct {
+            border: 5px solid var(--correct) !important;
+            animation: pulse 1s infinite alternate;
+        }
+
+        @keyframes pulse { from { transform: scale(1); } to { transform: scale(0.98); } }
 
         .creators-box {
             position: fixed;
             bottom: 20px;
-            left: 20px;
+            right: 20px;
             z-index: 100;
             background: #fff;
             border: 3px solid #000;
@@ -215,21 +185,22 @@
 
         <div class="instruction">
             <strong>PERHATIKAN GAMBAR ALAT MUSIK BERIKUT.</strong><br>
-            Tarik titik hitam dari deskripsi yang benar ke arah titik di samping gambar Kolintang!
+            Seret deskripsi yang paling tepat ke dalam kotak di bawah gambar Kolintang!
         </div>
 
-        <div class="game-area" id="game-container">
-            <canvas id="connection-canvas"></canvas>
-
-            <div class="node-column" id="options-list">
-                </div>
-
-            <div class="image-container">
-                <div class="image-target" id="main-target">
+        <div class="content-grid">
+            <div class="visual-side">
+                <div class="img-frame">
                     <img src="images/kolintang.jpg" alt="Kolintang">
-                    <div class="anchor anchor-left" id="target-anchor"></div>
+                    <p style="margin-top:10px; font-weight:900; letter-spacing:2px;">KOLINTANG</p>
                 </div>
-                <p style="margin-top:15px; font-size: 0.9rem; letter-spacing: 2px;">KOLINTANG</p>
+                <div id="drop-zone" class="drop-zone">
+                    DROP DESKRIPSI DI SINI
+                </div>
+            </div>
+
+            <div class="options-side" id="options-container">
+                <!-- Javascript will insert options -->
             </div>
         </div>
 
@@ -242,19 +213,13 @@
     </div>
 
     <script>
-        const canvas = document.getElementById('connection-canvas');
+        const canvas = document.getElementById('particles');
         const ctx = canvas.getContext('2d');
-        const container = document.getElementById('game-container');
+        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
         
-        let totalScore = (parseInt(localStorage.getItem('totalScore')) || 0);
-        document.getElementById('score-val').innerText = totalScore;
-
-        let isDone = false;
-        let isDragging = false;
-        let startPos = { x: 0, y: 0 };
-        let currentPos = { x: 0, y: 0 };
-        let activeNode = null;
-
+        // Setup Score
+        document.getElementById('score-val').innerText = localStorage.getItem('totalScore') || 0;
+        
         const quizData = {
             correct: "Alat musik pukul khas Sulawesi Utara yang terbuat dari kayu khusus dan dimainkan secara ansambel.",
             options: [
@@ -265,125 +230,95 @@
             ]
         };
 
-        function resize() {
-            canvas.width = container.offsetWidth;
-            canvas.height = container.offsetHeight;
-        }
-        window.addEventListener('resize', resize);
-        setTimeout(resize, 100);
+        let isGameOver = false;
 
-        const listWrap = document.getElementById('options-list');
+        // Render Options
+        const container = document.getElementById('options-container');
         [...quizData.options].sort(() => Math.random() - 0.5).forEach((text, i) => {
             const div = document.createElement('div');
-            div.className = 'option-node';
+            div.className = 'option-card';
             div.innerText = text;
-            div.dataset.value = text;
-            
-            const anchor = document.createElement('div');
-            anchor.className = 'anchor anchor-right';
-            
-            const handleStart = (e) => {
-                if (isDone) return;
-                isDragging = true;
-                activeNode = div;
-                const rect = anchor.getBoundingClientRect();
-                const contRect = container.getBoundingClientRect();
-                startPos = {
-                    x: rect.left - contRect.left + 10,
-                    y: rect.top - contRect.top + 10
-                };
-            };
+            div.draggable = true;
+            div.id = `opt-${i}`;
 
-            anchor.onmousedown = handleStart;
-            anchor.ontouchstart = (e) => handleStart(e.touches[0]);
+            div.addEventListener('dragstart', e => {
+                if(isGameOver) return;
+                e.dataTransfer.setData('text', e.target.id);
+                e.target.style.opacity = "0.4";
+            });
 
-            div.appendChild(anchor);
-            listWrap.appendChild(div);
+            div.addEventListener('dragend', e => {
+                e.target.style.opacity = "1";
+            });
+            
+            // Touch support for mobile dragging
+            div.addEventListener('touchstart', e => {
+                 if(isGameOver) return;
+                 // On mobile, we might implement a tap-to-select or proper touch drag.
+                 // Ideally similar to HTML5 DnD polyfill behaviour.
+                 // For simplicity here, we rely on standard HTML5 DnD which works on most modern mobile browsers
+                 // or we can implement a simple click-to-move for accessibility.
+            });
+
+            container.appendChild(div);
         });
 
-        function updatePos(e) {
-            if (!isDragging) return;
-            const contRect = container.getBoundingClientRect();
-            currentPos = {
-                x: (e.clientX || e.touches[0].clientX) - contRect.left,
-                y: (e.clientY || e.touches[0].clientY) - contRect.top
-            };
-            drawLines();
-        }
+        // Drop Zone
+        const dropZone = document.getElementById('drop-zone');
+        
+        dropZone.addEventListener('dragover', e => {
+            e.preventDefault();
+            if(!isGameOver) dropZone.classList.add('drag-over');
+        });
 
-        window.onmousemove = updatePos;
-        window.ontouchmove = updatePos;
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('drag-over');
+        });
 
-        const handleEnd = () => {
-            if (!isDragging) return;
-            isDragging = false;
+        dropZone.addEventListener('drop', e => {
+            e.preventDefault();
+            if(isGameOver) return;
             
-            const targetAnchor = document.getElementById('target-anchor');
-            const tRect = targetAnchor.getBoundingClientRect();
-            const contRect = container.getBoundingClientRect();
+            dropZone.classList.remove('drag-over');
+            const id = e.dataTransfer.getData('text');
+            const el = document.getElementById(id);
+            if(!el) return;
             
-            const targetX = tRect.left - contRect.left + 10;
-            const targetY = tRect.top - contRect.top + 10;
+            const choice = el.innerText;
+            isGameOver = true;
 
-            const dist = Math.hypot(currentPos.x - targetX, currentPos.y - targetY);
-
-            if (dist < 40) {
-                checkAnswer(activeNode.dataset.value, targetX, targetY);
-            } else {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-            }
-        };
-
-        window.onmouseup = handleEnd;
-        window.ontouchend = handleEnd;
-
-        function drawLines(customColor = 'var(--accent)') {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.beginPath();
-            ctx.moveTo(startPos.x, startPos.y);
-            ctx.lineTo(currentPos.x, currentPos.y);
-            ctx.strokeStyle = customColor;
-            ctx.lineWidth = 4;
-            ctx.lineCap = 'round';
-            ctx.stroke();
-        }
-
-        function checkAnswer(val, tx, ty) {
-            isDone = true;
-            currentPos = { x: tx, y: ty }; // Snap ke titik
-
-            if (val === quizData.correct) {
+            if(choice === quizData.correct) {
                 QuizCore.updateScore(10);
-                totalScore = (parseInt(localStorage.getItem('totalScore')) || 0);
-                document.getElementById('score-val').innerText = totalScore;
+                document.getElementById('score-val').innerText = localStorage.getItem('totalScore');
                 document.body.style.backgroundColor = "var(--correct)";
-                drawLines('var(--correct)');
-                activeNode.style.borderColor = 'var(--correct)';
+                
+                el.classList.add('correct-state');
+                dropZone.classList.add('correct-state');
+                dropZone.innerText = "BENAR!";
                 setTimeout(() => window.location.href = 'soal4.html', 1500);
             } else {
-                drawLines('var(--wrong)');
+                el.classList.add('wrong-state');
+                dropZone.classList.add('wrong-state');
+                dropZone.innerText = "SALAH!";
                 document.body.style.backgroundColor = "var(--wrong)";
-                activeNode.classList.add('is-wrong');
-                document.querySelectorAll('.option-node').forEach(n => {
-                    if(n.dataset.value === quizData.correct) n.style.background = "#e6fff4";
+                
+                // Show corect one
+                document.querySelectorAll('.option-card').forEach(card => {
+                    if(card.innerText === quizData.correct) card.classList.add('highlight-correct');
                 });
                 setTimeout(() => window.location.href = 'soal4.html', 2500);
             }
-        }
+        });
 
-        // Timer & BG Particles sama seperti sebelumnya
-
-        const pCanvas = document.getElementById('particles');
-        const pCtx = pCanvas.getContext('2d');
-        pCanvas.width = window.innerWidth; pCanvas.height = window.innerHeight;
+        // Simple particle animation
         let particles = [];
-        for(let i=0; i<30; i++) particles.push({x: Math.random()*pCanvas.width, y: Math.random()*pCanvas.height, s: Math.random()*0.3});
+        for(let i=0; i<30; i++) particles.push({x: Math.random()*canvas.width, y: Math.random()*canvas.height, s: Math.random()*2});
         function anim() {
-            pCtx.clearRect(0,0,pCanvas.width,pCanvas.height);
-            pCtx.fillStyle = "rgba(255,0,234,0.15)";
+            ctx.clearRect(0,0,canvas.width,canvas.height);
+            ctx.fillStyle = "rgba(255,255,255,0.1)";
             particles.forEach(p => {
-                pCtx.beginPath(); pCtx.arc(p.x, p.y, 1.5, 0, Math.PI*2); pCtx.fill();
-                p.y -= p.s; if(p.y < 0) p.y = pCanvas.height;
+                ctx.beginPath(); ctx.arc(p.x, p.y, p.s, 0, Math.PI*2); ctx.fill();
+                p.y -= 0.5; if(p.y < 0) p.y = canvas.height;
             });
             requestAnimationFrame(anim);
         }
