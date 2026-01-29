@@ -259,6 +259,7 @@
         const draggables = document.querySelectorAll('.draggable-img');
         const dropZones = document.querySelectorAll('.drop-zone');
 
+        // --- DESKTOP DRAG & DROP ---
         draggables.forEach(item => {
             item.addEventListener('dragstart', () => {
                 item.classList.add('dragging');
@@ -283,16 +284,83 @@
                 zone.classList.remove('drag-over');
                 const dragged = document.querySelector('.dragging');
                 if(!dragged) return;
-
-                // Handle if something is already there
-                const existing = zone.querySelector('.draggable-img');
-                if(existing) {
-                    sourceList.appendChild(existing);
-                }
-
-                zone.appendChild(dragged);
+                handleDrop(zone, dragged);
             });
         });
+
+        // --- MOBILE TOUCH DRAG & DROP ---
+        let activeTouch = null;
+        let initialX = 0;
+        let initialY = 0;
+        let clone = null;
+
+        draggables.forEach(item => {
+            item.addEventListener('touchstart', (e) => {
+                if(e.touches.length > 1) return;
+                e.preventDefault(); // Prevent image context menu
+
+                const touch = e.touches[0];
+                activeTouch = item;
+                const rect = item.getBoundingClientRect();
+                
+                // Create a clone for visual feedback
+                clone = item.cloneNode(true);
+                clone.style.position = 'fixed';
+                clone.style.left = rect.left + 'px';
+                clone.style.top = rect.top + 'px';
+                clone.style.width = rect.width + 'px';
+                clone.style.height = rect.height + 'px';
+                clone.style.zIndex = '1000';
+                clone.style.opacity = '0.8';
+                clone.style.pointerEvents = 'none'; // Click-through to detect drop zone
+                document.body.appendChild(clone);
+
+                initialX = touch.clientX - rect.left;
+                initialY = touch.clientY - rect.top;
+                
+                item.style.opacity = '0.5';
+            }, {passive: false});
+
+            item.addEventListener('touchmove', (e) => {
+                if(!activeTouch || !clone) return;
+                e.preventDefault(); // Prevent scrolling while dragging
+
+                const touch = e.touches[0];
+                clone.style.left = (touch.clientX - initialX) + 'px';
+                clone.style.top = (touch.clientY - initialY) + 'px';
+            }, {passive: false});
+
+            item.addEventListener('touchend', (e) => {
+                if(!activeTouch || !clone) return;
+                
+                // Hide clone briefly to find element underneath
+                clone.style.display = 'none';
+                const touch = e.changedTouches[0];
+                const target = document.elementFromPoint(touch.clientX, touch.clientY);
+                clone.style.display = 'block';
+
+                const zone = target ? target.closest('.drop-zone') : null;
+
+                if (zone) {
+                    handleDrop(zone, activeTouch);
+                }
+
+                // Cleanup
+                document.body.removeChild(clone);
+                activeTouch.style.opacity = '1';
+                activeTouch = null;
+                clone = null;
+            });
+        });
+
+        function handleDrop(zone, item) {
+            // Handle if something is already there
+            const existing = zone.querySelector('.draggable-img');
+            if(existing) {
+                sourceList.appendChild(existing);
+            }
+            zone.appendChild(item);
+        }
 
         function checkAnswers() {
             let correctCount = 0;
@@ -328,7 +396,7 @@
                 setTimeout(() => window.location.href = 'selesai.html', 1500);
             } else {
                 document.body.style.backgroundColor = "var(--wrong)";
-                setTimeout(() => window.location.href = 'selesai.html', 2000); // Or try again? Logic previously was fail forward
+                setTimeout(() => window.location.href = 'selesai.html', 2000); 
             }
         }
     </script>

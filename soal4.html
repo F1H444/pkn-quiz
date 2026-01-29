@@ -198,7 +198,7 @@
             div.innerText = text;
             div.dataset.value = text;
 
-            // Event Drag and Drop
+            // Event Drag and Drop Desktop
             div.ondragover = (e) => {
                 e.preventDefault();
                 if(!isDone) div.classList.add('hover');
@@ -209,20 +209,84 @@
             div.ondrop = (e) => {
                 e.preventDefault();
                 if(isDone) return;
+                div.classList.remove('hover');
                 handleAnswer(div);
             };
 
             grid.appendChild(div);
         });
 
-        // Logika Seret Gambar
+        // Logika Seret Gambar (Desktop)
         const wayangImg = document.getElementById('wayang-img');
         wayangImg.ondragstart = (e) => {
             if(isDone) e.preventDefault();
             e.dataTransfer.setData('text', 'wayang');
         };
 
+        // --- MOBILE TOUCH SUPPORT ---
+        let activeTouch = null;
+        let clone = null;
+        let initialX = 0, initialY = 0;
+
+        wayangImg.addEventListener('touchstart', (e) => {
+            if(e.touches.length > 1 || isDone) return;
+            e.preventDefault(); // Prevent context menu
+            
+            const touch = e.touches[0];
+            activeTouch = wayangImg;
+            const rect = wayangImg.getBoundingClientRect();
+
+            // Clone image for visual feedback
+            clone = wayangImg.cloneNode(true);
+            clone.style.position = 'fixed';
+            clone.style.left = rect.left + 'px';
+            clone.style.top = rect.top + 'px';
+            clone.style.width = rect.width + 'px';
+            clone.style.height = rect.height + 'px';
+            clone.style.opacity = '0.8';
+            clone.style.zIndex = '1000';
+            clone.style.pointerEvents = 'none';
+            document.body.appendChild(clone);
+
+            initialX = touch.clientX - rect.left;
+            initialY = touch.clientY - rect.top;
+            
+            wayangImg.style.opacity = '0.5';
+        }, {passive: false});
+
+        wayangImg.addEventListener('touchmove', (e) => {
+            if(!activeTouch || !clone) return;
+            e.preventDefault(); // Prevent scrolling
+            const touch = e.touches[0];
+            clone.style.left = (touch.clientX - initialX) + 'px';
+            clone.style.top = (touch.clientY - initialY) + 'px';
+        }, {passive: false});
+
+        wayangImg.addEventListener('touchend', (e) => {
+            if(!activeTouch || !clone) return;
+
+            // Hide clone to detect element underneath
+            clone.style.display = 'none';
+            const touch = e.changedTouches[0];
+            const elementUnder = document.elementFromPoint(touch.clientX, touch.clientY);
+            clone.style.display = 'block';
+
+            // Find drop target
+            const target = elementUnder ? elementUnder.closest('.drop-target') : null;
+
+            if (target) {
+                handleAnswer(target);
+            }
+
+            // Cleanup
+            document.body.removeChild(clone);
+            wayangImg.style.opacity = '1';
+            activeTouch = null;
+            clone = null;
+        });
+
         function handleAnswer(target) {
+            if(isDone) return;
             isDone = true;
             const userChoice = target.dataset.value;
             const allTargets = document.querySelectorAll('.drop-target');

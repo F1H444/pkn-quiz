@@ -182,7 +182,7 @@
         const img = document.getElementById('ulos-img');
         let isDone = false;
 
-        // Drag Logic
+        // Drag Logic Desktop
         img.ondragstart = (e) => {
             if(isDone) return e.preventDefault();
             e.dataTransfer.setData('text', 'ulos');
@@ -206,7 +206,67 @@
             };
         });
 
+        // --- MOBILE TOUCH SUPPORT ---
+        let activeTouch = null;
+        let clone = null;
+        let initialX = 0, initialY = 0;
+
+        img.addEventListener('touchstart', (e) => {
+            if(e.touches.length > 1 || isDone) return;
+            e.preventDefault(); 
+            
+            const touch = e.touches[0];
+            activeTouch = img;
+            const rect = img.getBoundingClientRect();
+
+            // Clone
+            clone = img.cloneNode(true);
+            clone.style.position = 'fixed';
+            clone.style.left = rect.left + 'px';
+            clone.style.top = rect.top + 'px';
+            clone.style.width = rect.width + 'px';
+            clone.style.height = rect.height + 'px';
+            clone.style.opacity = '0.8';
+            clone.style.zIndex = '1000';
+            clone.style.pointerEvents = 'none';
+            document.body.appendChild(clone);
+
+            initialX = touch.clientX - rect.left;
+            initialY = touch.clientY - rect.top;
+            
+            img.style.opacity = '0.5';
+        }, {passive: false});
+
+        img.addEventListener('touchmove', (e) => {
+            if(!activeTouch || !clone) return;
+            e.preventDefault(); 
+            const touch = e.touches[0];
+            clone.style.left = (touch.clientX - initialX) + 'px';
+            clone.style.top = (touch.clientY - initialY) + 'px';
+        }, {passive: false});
+
+        img.addEventListener('touchend', (e) => {
+            if(!activeTouch || !clone) return;
+
+            clone.style.display = 'none';
+            const touch = e.changedTouches[0];
+            const elementUnder = document.elementFromPoint(touch.clientX, touch.clientY);
+            clone.style.display = 'block';
+
+            const target = elementUnder ? elementUnder.closest('.option-target') : null;
+
+            if (target) {
+                checkAnswer(target);
+            }
+
+            document.body.removeChild(clone);
+            img.style.opacity = '1';
+            activeTouch = null;
+            clone = null;
+        });
+
         function checkAnswer(selected) {
+            if(isDone) return;
             isDone = true;
             const choice = selected.dataset.ans;
 
