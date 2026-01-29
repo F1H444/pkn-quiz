@@ -30,7 +30,9 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            overflow: hidden;
+            padding: 20px;
+            overflow-y: auto;
+            overflow-x: hidden;
         }
 
         .quiz-container {
@@ -41,6 +43,7 @@
             max-width: 900px;
             padding: 30px;
             position: relative;
+            margin: auto;
         }
 
         .header-ui {
@@ -66,6 +69,18 @@
             justify-content: space-between;
             position: relative;
             padding: 40px 0;
+            gap: 20px;
+        }
+
+        @media (max-width: 850px) {
+            .connection-arena { 
+                flex-direction: column; 
+                align-items: center;
+                gap: 40px;
+            }
+            body { align-items: flex-start; }
+            .column { width: 100%; align-items: stretch; }
+            .item { width: 100%; min-width: unset; }
         }
 
         .column {

@@ -28,6 +28,8 @@
             align-items: center;
             min-height: 100vh;
             padding: 20px;
+            overflow-y: auto;
+            overflow-x: hidden;
             transition: background 0.5s;
         }
 
@@ -39,6 +41,12 @@
             max-width: 800px;
             padding: 30px;
             text-align: center;
+            margin: auto;
+        }
+
+        @media (max-width: 850px) {
+            body { align-items: flex-start; }
+            .quiz-container { padding: 20px; }
         }
 
         .header-ui {

@@ -29,7 +29,9 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            overflow: hidden;
+            padding: 20px;
+            overflow-y: auto;
+            overflow-x: hidden;
             touch-action: none;
             user-select: none;
             -webkit-user-select: none;
@@ -53,6 +55,7 @@
             position: relative;
             z-index: 10;
             animation: pageIn 0.8s forwards;
+            margin: auto;
         }
 
         @keyframes pageIn {
@@ -87,6 +90,16 @@
             gap: 60px;
             position: relative;
             min-height: 400px;
+        }
+
+        @media (max-width: 850px) {
+            .game-area { 
+                grid-template-columns: 1fr;
+                gap: 40px; 
+            }
+            .image-container { order: -1; }
+            body { align-items: flex-start; }
+            .quiz-card { padding: 20px; }
         }
 
         #connection-canvas {

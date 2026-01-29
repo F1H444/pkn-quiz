@@ -23,6 +23,8 @@
             align-items: center;
             min-height: 100vh;
             padding: 20px;
+            overflow-y: auto;
+            overflow-x: hidden;
             transition: background-color 0.5s ease;
         }
 
@@ -33,6 +35,7 @@
             width: 100%;
             max-width: 900px;
             padding: 25px;
+            margin: auto;
         }
 
         .header-ui {
@@ -77,6 +80,11 @@
             grid-template-columns: repeat(3, 1fr);
             gap: 15px;
             margin-bottom: 20px;
+        }
+
+        @media (max-width: 850px) {
+            .islands-grid { grid-template-columns: 1fr; }
+            body { align-items: flex-start; }
         }
 
         .island-box {

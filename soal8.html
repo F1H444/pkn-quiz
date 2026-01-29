@@ -23,6 +23,8 @@
             align-items: center;
             min-height: 100vh;
             padding: 20px;
+            overflow-y: auto;
+            overflow-x: hidden;
         }
 
         .quiz-container {
@@ -32,6 +34,7 @@
             width: 95vw;
             max-width: 850px;
             padding: 30px;
+            margin: auto;
         }
 
         .header-ui {
@@ -60,6 +63,12 @@
             grid-template-columns: 300px 1fr;
             gap: 30px;
             align-items: center;
+        }
+
+        @media (max-width: 850px) {
+            .main-arena { grid-template-columns: 1fr; }
+            body { align-items: flex-start; }
+            .quiz-container { padding: 20px; }
         }
 
         /* Objek Drag */

@@ -30,7 +30,8 @@
             align-items: center;
             min-height: 100vh;
             padding: 20px;
-            overflow: hidden;
+            overflow-y: auto;
+            overflow-x: hidden;
         }
 
         #particles {
@@ -50,6 +51,7 @@
             position: relative;
             z-index: 10;
             animation: pageIn 0.8s forwards cubic-bezier(0.23, 1, 0.32, 1);
+            margin: auto;
         }
 
         @keyframes pageIn {
@@ -100,6 +102,8 @@
 
         @media (max-width: 850px) {
             .game-layout { grid-template-columns: 1fr; }
+            body { align-items: flex-start; }
+            .quiz-card { padding: 25px; }
         }
 
         /* Target Zone */

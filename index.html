@@ -30,7 +30,8 @@
             align-items: center;
             min-height: 100vh;
             padding: 20px;
-            overflow: hidden;
+            overflow-y: auto;
+            overflow-x: hidden;
         }
 
         .login-card {
@@ -42,6 +43,7 @@
             max-width: 500px;
             position: relative;
             animation: cardEntrance 0.8s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+            margin: auto; /* Helps with centering when scrolling is enabled */
         }
 
         @keyframes cardEntrance {
@@ -135,6 +137,7 @@
         @media (max-width: 480px) {
             h1 { font-size: 2.5rem; }
             .login-card { padding: 30px; }
+            body { align-items: flex-start; } /* Prevent cut-off on top */
         }
 
         .creators-box {
